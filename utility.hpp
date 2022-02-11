@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 12:07:37 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/11 12:15:05 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/11 12:34:07 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,8 @@ template<class T>
 struct enable_if<true, T> {
 	typedef T type;
 };
+//Typedef for conditional return type
+// typedef typename enable_if<B,T>::type	enable_if_t;
 
     //  equal_compare //
     //---------------------------------------//

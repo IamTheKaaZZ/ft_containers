@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/01/13 18:02:46 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/11 12:54:41 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 # define ITERATORS_HPP
 
 # include <cstddef>
-// # include <iterator>
+# include <iterator>
+# include "utility.hpp"
 
 namespace ft {
 
@@ -332,6 +333,15 @@ namespace ft {
 				return this->_ptr[sz];
 			};
     };
+
+    //  Iterator Functions //
+    //---------------------------------------//
+template<class Iter, class Distance>
+typename ft::enable_if<Iter::iterator_category == input_iterator_tag(), void>::type
+	advance(Iter & it, Distance n) {
+
+}
+
 
     //  Reverse (Const) Iterator //
     //---------------------------------------//
