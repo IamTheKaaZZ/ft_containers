@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 12:07:37 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/11 12:34:07 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/11 16:16:03 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,8 +85,6 @@ template<class T>
 struct enable_if<true, T> {
 	typedef T type;
 };
-//Typedef for conditional return type
-// typedef typename enable_if<B,T>::type	enable_if_t;
 
     //  equal_compare //
     //---------------------------------------//
@@ -129,6 +127,12 @@ bool	lexicographical_compare(InputIterator1 first1, InputIterator1 last1,
 	return (first2!=last2);
 }
 
+    //  addressof //
+    //---------------------------------------//
+template<class T>
+constexpr T*	addressof(T& arg) noexcept {
+    return &arg;
+}
 
     //  pair //
     //---------------------------------------//

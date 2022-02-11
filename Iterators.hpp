@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/11 12:54:41 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/11 16:42:58 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,31 @@ namespace ft {
 
     //  Iterator_tags //
     //---------------------------------------//
-    struct input_iterator_tag {};
-    struct output_iterator_tag {};
-    struct forward_iterator_tag : public input_iterator_tag {};
-    struct bidirectional_iterator_tag : public forward_iterator_tag {};
-    struct random_access_iterator_tag : public bidirectional_iterator_tag {};
+    struct input_iterator_tag {
+		typedef input_iterator_tag	tags;
+		char const	tag = 'i';
+		friend bool	operator==(tags const & lhs, tags & rhs) { return (lhs.tag == rhs.tag); };
+	};
+    struct output_iterator_tag {
+		typedef output_iterator_tag	tags;
+		char const	tag = 'o';
+		friend bool	operator==(tags const & lhs, tags & rhs) { return (lhs.tag == rhs.tag); };
+	};
+    struct forward_iterator_tag : public input_iterator_tag {
+		typedef forward_iterator_tag	tags;
+		char const	tag = 'f';
+		friend bool	operator==(tags const & lhs, tags & rhs) { return (lhs.tag == rhs.tag); };
+	};
+    struct bidirectional_iterator_tag : public forward_iterator_tag {
+		typedef bidirectional_iterator_tag	tags;
+		char const	tag = 'b';
+		friend bool	operator==(tags const & lhs, tags & rhs) { return (lhs.tag == rhs.tag); };
+	};
+    struct random_access_iterator_tag : public bidirectional_iterator_tag {
+		typedef random_access_iterator_tag	tags;
+		char const	tag = 'r';
+		friend bool	operator==(tags const & lhs, tags & rhs) { return (lhs.tag == rhs.tag); };
+	};
 
     //  Iterator_traits //
     //---------------------------------------//
@@ -88,12 +108,11 @@ namespace ft {
             virtual iterator&   operator--() = 0;
             virtual iterator    operator--(int) = 0;
             //arithmatic
-            typedef size_t  size_type;
-            virtual iterator&		operator+=(size_type) = 0;
-            virtual iterator		operator+(size_type) const = 0;
-            virtual friend iterator	operator+(size_type, iterator const &) = 0;
-            virtual iterator&		operator-=(size_type) = 0;
-            virtual iterator		operator-(size_type) const = 0;
+            virtual iterator&		operator+=(difference_type) = 0;
+            virtual iterator		operator+(difference_type) const = 0;
+            virtual friend iterator	operator+(difference_type, iterator const &) = 0;
+            virtual iterator&		operator-=(difference_type) = 0;
+            virtual iterator		operator-(difference_type) const = 0;
             virtual difference_type	operator-(iterator) const = 0;
             //boolean
             virtual friend bool    operator==(iterator const &, iterator const &) = 0;
@@ -105,7 +124,7 @@ namespace ft {
             //access
             virtual reference   operator*() const { return *(this->_ptr); }
             virtual pointer     operator->() const = 0;
-            virtual reference   operator[](size_type) const = 0;
+            virtual reference   operator[](difference_type) const = 0;
         
         protected:
 
@@ -137,12 +156,11 @@ namespace ft {
             virtual const_iterator&   operator--() = 0;
             virtual const_iterator    operator--(int) = 0;
             //arithmatic
-            typedef size_t  size_type;
-            virtual const_iterator&			operator+=(size_type) = 0;
-            virtual const_iterator			operator+(size_type) const = 0;
-            virtual friend const_iterator	operator+(size_type, const_iterator const &) = 0;
-            virtual const_iterator&			operator-=(size_type) = 0;
-            virtual const_iterator			operator-(size_type) const = 0;
+            virtual const_iterator&			operator+=(difference_type) = 0;
+            virtual const_iterator			operator+(difference_type) const = 0;
+            virtual friend const_iterator	operator+(difference_type, const_iterator const &) = 0;
+            virtual const_iterator&			operator-=(difference_type) = 0;
+            virtual const_iterator			operator-(difference_type) const = 0;
             virtual difference_type			operator-(const_iterator) const = 0;
             //boolean
             virtual friend bool    operator==(const_iterator const &, const_iterator const &) = 0;
@@ -154,7 +172,7 @@ namespace ft {
             //access
             virtual reference   operator*() const { return *(this->_ptr); }
             virtual pointer     operator->() const = 0;
-            virtual reference   operator[](size_type) const = 0;
+            virtual reference   operator[](difference_type) const = 0;
         
         protected:
 
@@ -239,7 +257,7 @@ namespace ft {
             };
             virtual iterator    operator--(int) {
                 bidirect_it tmp(*this);
-                *this--;
+                --*this;
                 return tmp;
             };
     };
@@ -256,7 +274,7 @@ namespace ft {
             };
             virtual const_iterator    operator--(int) {
                 bidirect_it tmp(*this);
-                *this--;
+                --*this;
                 return tmp;
             };
     };
@@ -270,31 +288,33 @@ namespace ft {
 
         public:
 			typedef iterator<random_access_iterator_tag, T>	ra_it;
-            iterator&		operator+=(size_type sz) {
-				this->_ptr += sz;
+            iterator&		operator+=(difference_type sz) {
+				while(sz--) ++*this;
 				return *this;
 			};
-            iterator		operator+(size_type sz) const {
+            iterator		operator+(difference_type sz) const {
 				ra_it	tmp(*this);
 				tmp += sz;
 				return tmp;
 			};
-            friend iterator operator+(size_type sz, iterator const & src) {
+            friend iterator operator+(difference_type sz, iterator const & src) {
 				return (src + sz);
 			};
-            iterator&		operator-=(size_type sz) {
-				this->_ptr -= sz;
+            iterator&		operator-=(difference_type sz) {
+				while(sz--) --*this;
 				return *this;
 			};
-            iterator		operator-(size_type sz) const {
+            iterator		operator-(difference_type sz) const {
 				ra_it	tmp(*this);
 				tmp -= sz;
 				return tmp;
 			};
             difference_type operator-(iterator src) const {
-				return this->_ptr - src._ptr;
+				difference_type	n = 0;
+				while(*this != src--) n++;
+				return n;
 			};
-            reference		operator[](size_type sz) const {
+            reference		operator[](difference_type sz) const {
 				return this->_ptr[sz];
 			};
     };
@@ -305,43 +325,93 @@ namespace ft {
 
         public:
 			typedef const_iterator<random_access_iterator_tag, T>	ra_it;
-            const_iterator&		operator+=(size_type sz) {
-				this->_ptr += sz;
+            const_iterator&		operator+=(difference_type sz) {
+				while(sz--) ++*this;
 				return *this;
 			};
-            const_iterator		operator+(size_type sz) const {
+            const_iterator		operator+(difference_type sz) const {
 				ra_it	tmp(*this);
 				tmp += sz;
 				return tmp;
 			};
-            friend const_iterator operator+(size_type sz, const_iterator const & src) {
+            friend const_iterator operator+(difference_type sz, const_iterator const & src) {
 				return (src + sz);
 			};
-            const_iterator&		operator-=(size_type sz) {
-				this->_ptr -= sz;
+            const_iterator&		operator-=(difference_type sz) {
+				while(sz--) --*this;
 				return *this;
 			};
-            const_iterator		operator-(size_type sz) const {
+            const_iterator		operator-(difference_type sz) const {
 				ra_it	tmp(*this);
 				tmp -= sz;
 				return tmp;
 			};
             difference_type operator-(const_iterator src) const {
-				return this->_ptr - src._ptr;
+				difference_type	n = 0;
+				while(*this != src--) n++;
+				return n;
 			};
-            reference		operator[](size_type sz) const {
+            reference		operator[](difference_type sz) const {
 				return this->_ptr[sz];
 			};
     };
 
     //  Iterator Functions //
     //---------------------------------------//
+    //  advance //
+//For input
 template<class Iter, class Distance>
 typename ft::enable_if<Iter::iterator_category == input_iterator_tag(), void>::type
 	advance(Iter & it, Distance n) {
-
+		while (n--) it++;
+}
+//For bidir
+template<class Iter, class Distance>
+typename ft::enable_if<Iter::iterator_category == bidirectional_iterator_tag(), void>::type
+	advance(Iter & it, Distance n) {
+		if (n < 0) while(n++) it--;
+		else while(n--) it++;
+}
+//For random access
+template<class Iter, class Distance>
+typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), void>::type
+	advance(Iter & it, Distance n) {
+		if (n < 0) it -= -n;
+		else it += n;
 }
 
+    //  prev //
+//For bidir
+template<class Iter>
+typename ft::enable_if<Iter::iterator_category == bidirectional_iterator_tag(), Iter>::type
+	prev(Iter & it, typename iterator_traits<Iter>::difference_type n = 1) {
+		advance(it, -n);
+		return it;
+}
+//For random access
+template<class Iter>
+typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), Iter>::type
+	prev(Iter & it, typename iterator_traits<Iter>::difference_type n = 1) {
+		advance(it, -n);
+		return it;
+}
+
+    //  distance //
+//For any except random access
+template<class Iter>
+typename ft::enable_if<!(Iter::iterator_category == random_access_iterator_tag()), typename iterator_traits<Iter>::difference_type>::type
+	distance(Iter first, Iter last) {
+	typename iterator_traits<Iter>::difference_type>::type	dist = 0;
+	while(first++ != last) dist++;
+	return dist;
+}
+//For random access
+template<class Iter>
+typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), typename iterator_traits<Iter>::difference_type>::type
+	distance(Iter first, Iter last) {
+	typename iterator_traits<Iter>::difference_type>::type	dist = first - last;
+	return dist;
+}
 
     //  Reverse (Const) Iterator //
     //---------------------------------------//
@@ -357,6 +427,77 @@ typename ft::enable_if<Iter::iterator_category == input_iterator_tag(), void>::t
             typedef typename iterator_traits<Iterator>::reference			reference;
             typedef typename iterator_traits<Iterator>::iterator_category	iterator_category;
 
+			constexpr reverse_iterator() {}
+			constexpr explicit reverse_iterator(iterator_type it) : baseIt(it) {}
+			constexpr reverse_iterator(reverse_iterator<Iterator> const & revIt) : baseIt(revIt.baseIt) {}
+
+			iterator_type	base() const { return baseIt; }
+			//arithmetic
+			constexpr reverse_iterator&	operator++() {
+				--baseIt;
+				return *this;
+			}
+			constexpr reverse_iterator	operator++(int) {
+				reverse_iterator<Iterator>	tmp(baseIt);
+				++*this;
+				return tmp;
+			}
+			constexpr reverse_iterator&	operator--() {
+				++baseIt;
+				return *this;
+			}
+			constexpr reverse_iterator	operator--(int) {
+				reverse_iterator<Iterator>	tmp(baseIt);
+				--*this;
+				return tmp;
+			}
+			typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), reverse_iterator&>::type
+            	operator+=(difference_type sz) {
+					while(sz--) ++*this;
+					return *this;
+				}
+			typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), reverse_iterator>::type
+            	operator+(difference_type sz) {
+					reverse_iterator<Iterator>	tmp(*this);
+					tmp += sz;
+					return tmp;
+				}
+			typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), reverse_iterator&>::type
+            	operator-=(difference_type sz) {
+					while(sz--) --*this;
+					return *this;
+				}
+			typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), reverse_iterator>::type
+            	operator-(difference_type sz) {
+					reverse_iterator<Iterator>	tmp(*this);
+					tmp -= sz;
+					return tmp;
+				}
+			friend typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), reverse_iterator>::type
+            	operator+(difference_type sz, reverse_iterator const & src) {
+					return (src + sz);
+				}
+			typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), difference_type>::type
+            	operator-(reverse_iterator src) const {
+					difference_type	n = 0;
+					while(*this != src--) n++;
+					return n;
+				}
+			//access
+			constexpr reference	operator*() const {
+				return *prev(baseIt);
+			}
+			constexpr pointer	operator->() const {
+				return addressof(operator*());
+			}
+			typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), reference>::type
+				operator[](difference_type n) const {
+					return baseIt[-n - 1];
+				}
+
+		private:
+
+			iterator_type	baseIt;
 
 	};
 }
