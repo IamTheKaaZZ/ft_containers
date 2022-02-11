@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/11 16:42:58 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/11 17:05:48 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -314,6 +314,18 @@ namespace ft {
 				while(*this != src--) n++;
 				return n;
 			};
+            virtual friend bool    operator<(iterator const & a, iterator const & b) {
+				return b - a > 0;
+			};
+            virtual friend bool    operator>(iterator const & a, iterator const &b) {
+				return b < a;
+			};
+            virtual friend bool    operator<=(iterator const & a, iterator const & b) {
+				return !(a < b);
+			};
+            virtual friend bool    operator>=(iterator const & a, iterator const & b) {
+				return !(a > b);
+			};
             reference		operator[](difference_type sz) const {
 				return this->_ptr[sz];
 			};
@@ -351,6 +363,18 @@ namespace ft {
 				while(*this != src--) n++;
 				return n;
 			};
+            virtual friend bool    operator<(const_iterator const & a, const_iterator const & b) {
+				return b - a > 0;
+			};
+            virtual friend bool    operator>(const_iterator const & a, const_iterator const &b) {
+				return b < a;
+			};
+            virtual friend bool    operator<=(const_iterator const & a, const_iterator const & b) {
+				return !(a < b);
+			};
+            virtual friend bool    operator>=(const_iterator const & a, const_iterator const & b) {
+				return !(a > b);
+			};
             reference		operator[](difference_type sz) const {
 				return this->_ptr[sz];
 			};
@@ -359,59 +383,59 @@ namespace ft {
     //  Iterator Functions //
     //---------------------------------------//
     //  advance //
-//For input
-template<class Iter, class Distance>
-typename ft::enable_if<Iter::iterator_category == input_iterator_tag(), void>::type
-	advance(Iter & it, Distance n) {
-		while (n--) it++;
-}
-//For bidir
-template<class Iter, class Distance>
-typename ft::enable_if<Iter::iterator_category == bidirectional_iterator_tag(), void>::type
-	advance(Iter & it, Distance n) {
-		if (n < 0) while(n++) it--;
-		else while(n--) it++;
-}
-//For random access
-template<class Iter, class Distance>
-typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), void>::type
-	advance(Iter & it, Distance n) {
-		if (n < 0) it -= -n;
-		else it += n;
-}
+		//For input
+	template<class Iter, class Distance>
+	typename ft::enable_if<Iter::iterator_category == input_iterator_tag(), void>::type
+		advance(Iter & it, Distance n) {
+			while (n--) it++;
+	}
+		//For bidir
+	template<class Iter, class Distance>
+	typename ft::enable_if<Iter::iterator_category == bidirectional_iterator_tag(), void>::type
+		advance(Iter & it, Distance n) {
+			if (n < 0) while(n++) it--;
+			else while(n--) it++;
+	}
+		//For random access
+	template<class Iter, class Distance>
+	typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), void>::type
+		advance(Iter & it, Distance n) {
+			if (n < 0) it -= -n;
+			else it += n;
+	}
 
-    //  prev //
-//For bidir
-template<class Iter>
-typename ft::enable_if<Iter::iterator_category == bidirectional_iterator_tag(), Iter>::type
-	prev(Iter & it, typename iterator_traits<Iter>::difference_type n = 1) {
-		advance(it, -n);
-		return it;
-}
-//For random access
-template<class Iter>
-typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), Iter>::type
-	prev(Iter & it, typename iterator_traits<Iter>::difference_type n = 1) {
-		advance(it, -n);
-		return it;
-}
+	//  prev //
+		//For bidir
+	template<class Iter>
+	typename ft::enable_if<Iter::iterator_category == bidirectional_iterator_tag(), Iter>::type
+		prev(Iter & it, typename iterator_traits<Iter>::difference_type n = 1) {
+			advance(it, -n);
+			return it;
+	}
+		//For random access
+	template<class Iter>
+	typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), Iter>::type
+		prev(Iter & it, typename iterator_traits<Iter>::difference_type n = 1) {
+			advance(it, -n);
+			return it;
+	}
 
     //  distance //
-//For any except random access
-template<class Iter>
-typename ft::enable_if<!(Iter::iterator_category == random_access_iterator_tag()), typename iterator_traits<Iter>::difference_type>::type
-	distance(Iter first, Iter last) {
-	typename iterator_traits<Iter>::difference_type>::type	dist = 0;
-	while(first++ != last) dist++;
-	return dist;
-}
-//For random access
-template<class Iter>
-typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), typename iterator_traits<Iter>::difference_type>::type
-	distance(Iter first, Iter last) {
-	typename iterator_traits<Iter>::difference_type>::type	dist = first - last;
-	return dist;
-}
+		//For any except random access
+	template<class Iter>
+	typename ft::enable_if<!(Iter::iterator_category == random_access_iterator_tag()), typename iterator_traits<Iter>::difference_type>::type
+		distance(Iter first, Iter last) {
+		typename iterator_traits<Iter>::difference_type>::type	dist = 0;
+		while(first++ != last) dist++;
+		return dist;
+	}
+		//For random access
+	template<class Iter>
+	typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), typename iterator_traits<Iter>::difference_type>::type
+		distance(Iter first, Iter last) {
+		typename iterator_traits<Iter>::difference_type>::type	dist = first - last;
+		return dist;
+	}
 
     //  Reverse (Const) Iterator //
     //---------------------------------------//
@@ -483,6 +507,29 @@ typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), 
 					while(*this != src--) n++;
 					return n;
 				}
+            //booleans
+        	friend bool    operator==(reverse_iterator const & a, reverse_iterator const & b) {
+				return (a.base() == b.base());
+			};
+        	friend bool    operator!=(reverse_iterator const & a, reverse_iterator const & b) {
+				return (a.base != b.base());
+			};
+			friend typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), bool>::type
+            	operator<(reverse_iterator const & a, reverse_iterator const & b) {
+					return (a.base() < b.base());
+				};
+			friend typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), bool>::type
+            	operator>(reverse_iterator const & a, reverse_iterator const &b) {
+					return (a.base > b.base);
+				};
+			friend typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), bool>::type
+				operator<=(reverse_iterator const & a, reverse_iterator const & b) {
+					return (a.base() <= b.base());
+				};
+			friend typename ft::enable_if<Iterator::iterator_category == random_access_iterator_tag(), bool>::type
+				operator>=(reverse_iterator const & a, reverse_iterator const & b) {
+					return (a.base() >= b.base());
+				};
 			//access
 			constexpr reference	operator*() const {
 				return *prev(baseIt);
@@ -495,7 +542,7 @@ typename ft::enable_if<Iter::iterator_category == random_access_iterator_tag(), 
 					return baseIt[-n - 1];
 				}
 
-		private:
+		protected:
 
 			iterator_type	baseIt;
 
