@@ -35,8 +35,6 @@ endif
 # end progress bar
 #------------------
 
-# CPP_00
-
 # COLORS
 
 GREEN	= \033[0;32m
@@ -49,12 +47,12 @@ QUIT	= \033[0m
 # VARIABLES
 
 NAME	=	ft_containers
-SRCS	=	$(wildcard *.cpp)
+SRCS	=	$(wildcard tests/%.cpp)
 DIR_O	=	obj/
-OBJS	=	$(SRCS:%.cpp=obj/%.o)
-INCL	=	$(wildcard *.hpp)
+OBJS	=	$(SRCS:tests/%.cpp=obj/%.o)
+INCL	=	$(wildcard include/%.hpp)
 CC		=	clang++
-CFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Wshadow -Wno-shadow -Wc++98-compat
+CFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Wc++98-compat -I$(INCL)
 DBFLAGS =	-g -fsanitize=address
 
 # RULES
@@ -67,21 +65,14 @@ $(NAME):	$(OBJS)
 	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
 	@$(ECHO) "$(GREEN) $(NAME) executable CREATED$(QUIT)"
 
-$(DIR_O)%.o:	%.cpp $(INCL)
+$(DIR_O)%.o:	tests/%.cpp $(INCL)
 	@$(CC) -c $(CFLAGS) $< -o $@
 	@$(ECHO) "$(GREEN) $@$(QUIT)"
 
 $(OBJS):	| $(DIR_O)
 
 $(DIR_O):
-	@mkdir -p $(DIR_O)
-
-# test:	all
-# 	@$(ECHO) '$(WHITE)./$(NAME) | grep "Animal constructor" | wc -l ; ./$(NAME) | grep "Animal destructor" | wc -l$(QUIT)'
-# 	@./$(NAME) | grep "Animal constructor" | wc -l ; ./$(NAME) | grep "Animal destructor" | wc -l
-# 	@$(ECHO) '$(WHITE)./$(NAME) | grep "Brain constructor" | wc -l ; ./$(NAME) | grep "Brain destructor" | wc -l$(QUIT)'
-# 	@./$(NAME) | grep "Animal constructor" | wc -l ; ./$(NAME) | grep "Animal destructor" | wc -l
-# 	@./$(NAME) | grep "Idea"
+	mkdir -p $(DIR_O)
 
 clean:
 	@$(ECHO) "$(RED)Deleting .o files$(QUIT)"

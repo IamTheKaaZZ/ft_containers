@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 12:07:37 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/11 16:16:03 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/14 09:43:43 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,40 +40,40 @@ struct is_same<T, T> : true_type {};
 
     //  is_integral //
     //---------------------------------------//
-//Check if type is integral
-template<bool>
-struct is_integral : true_type {};
-template<char>
-struct is_integral : true_type {};
-template<char16_t>
-struct is_integral : true_type {};
-template<char32_t>
-struct is_integral : true_type {};
-template<wchar_t>
-struct is_integral : true_type {};
-template<signed char>
-struct is_integral : true_type {};
-template<short int>
-struct is_integral : true_type {};
-template<int>
-struct is_integral : true_type {};
-template<long int>
-struct is_integral : true_type {};
-template<long long int>
-struct is_integral : true_type {};
-template<unsigned char>
-struct is_integral : true_type {};
-template<unsigned short int>
-struct is_integral : true_type {};
-template<unsigned int>
-struct is_integral : true_type {};
-template<unsigned long int>
-struct is_integral : true_type {};
-template<unsigned long long int>
-struct is_integral : true_type {};
-//none of the above => NOT integral
+//none of the below => NOT integral
 template<class T>
 struct is_integral : false_type {};
+//Check if type is integral => specializations of the template
+template<>
+struct is_integral<bool> : true_type {};
+template<>
+struct is_integral<char> : true_type {};
+template<>
+struct is_integral<char16_t> : true_type {};
+template<>
+struct is_integral<char32_t> : true_type {};
+template<>
+struct is_integral<wchar_t> : true_type {};
+template<>
+struct is_integral<signed char> : true_type {};
+template<>
+struct is_integral<short int> : true_type {};
+template<>
+struct is_integral<int> : true_type {};
+template<>
+struct is_integral<long int> : true_type {};
+template<>
+struct is_integral<long long int> : true_type {};
+template<>
+struct is_integral<unsigned char> : true_type {};
+template<>
+struct is_integral<unsigned short int> : true_type {};
+template<>
+struct is_integral<unsigned int> : true_type {};
+template<>
+struct is_integral<unsigned long int> : true_type {};
+template<>
+struct is_integral<unsigned long long int> : true_type {};
 
     //  enable_if //
     //---------------------------------------//
@@ -138,8 +138,8 @@ constexpr T*	addressof(T& arg) noexcept {
     //---------------------------------------//
 template<class T1, class T2>
 struct pair {
-	typedef typename T1	first_type;
-	typedef typename T2	second_type;
+	typedef T1	first_type;
+	typedef T2	second_type;
 	first_type	first;
 	second_type	second;
 
