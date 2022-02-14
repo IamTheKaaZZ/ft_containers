@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/14 12:31:43 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/14 16:39:55 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,39 +22,39 @@ namespace ft {
 //  Iterator_tags //
 //---------------------------------------//
 struct input_iterator_tag {
-  typedef input_iterator_tag tags;
-  char const tag = 'i';
-  friend bool operator==(tags const &lhs, tags &rhs) {
-    return (lhs.tag == rhs.tag);
-  };
+//   typedef input_iterator_tag tags;
+//   static char const tag = 'i';
+//   friend bool operator==(tags const &lhs, tags &rhs) {
+//     return (lhs.tag == rhs.tag);
+//   };
 };
 struct output_iterator_tag {
-  typedef output_iterator_tag tags;
-  char const tag = 'o';
-  friend bool operator==(tags const &lhs, tags &rhs) {
-    return (lhs.tag == rhs.tag);
-  };
+//   typedef output_iterator_tag tags;
+//   static char const tag = 'o';
+//   friend bool operator==(tags const &lhs, tags &rhs) {
+//     return (lhs.tag == rhs.tag);
+//   };
 };
 struct forward_iterator_tag : public input_iterator_tag {
-  typedef forward_iterator_tag tags;
-  char const tag = 'f';
-  friend bool operator==(tags const &lhs, tags &rhs) {
-    return (lhs.tag == rhs.tag);
-  };
+//   typedef forward_iterator_tag tags;
+//   static char const tag = 'f';
+//   friend bool operator==(tags const &lhs, tags &rhs) {
+//     return (lhs.tag == rhs.tag);
+//   };
 };
 struct bidirectional_iterator_tag : public forward_iterator_tag {
-  typedef bidirectional_iterator_tag tags;
-  char const tag = 'b';
-  friend bool operator==(tags const &lhs, tags &rhs) {
-    return (lhs.tag == rhs.tag);
-  };
+//   typedef bidirectional_iterator_tag tags;
+//   static char const tag = 'b';
+//   friend bool operator==(tags const &lhs, tags &rhs) {
+//     return (lhs.tag == rhs.tag);
+//   };
 };
 struct random_access_iterator_tag : public bidirectional_iterator_tag {
-  typedef random_access_iterator_tag tags;
-  char const tag = 'r';
-  friend bool operator==(tags const &lhs, tags &rhs) {
-    return (lhs.tag == rhs.tag);
-  };
+//   typedef random_access_iterator_tag tags;
+//   static char const tag = 'r';
+//   friend bool operator==(tags const &lhs, tags &rhs) {
+//     return (lhs.tag == rhs.tag);
+//   };
 };
 
 //  Iterator_traits //
@@ -98,11 +98,13 @@ public:
   typedef Reference reference;
   typedef Category iterator_category;
 
-  iterator() = delete;
+//   iterator() = delete;
   explicit iterator(pointer ptr) : _ptr(ptr){};
-  iterator(iterator const &) = default;
-  virtual ~iterator() = default;
-  iterator &operator=(const iterator &rhs) = default;
+  iterator(iterator const & src) : _ptr(src._ptr) {};
+  virtual ~iterator() {};
+  iterator &operator=(const iterator &rhs) {
+	  if (*this != rhs) this->_ptr = rhs._ptr;
+  };
 
   // increment/decrement
   virtual iterator &operator++() {
@@ -151,12 +153,14 @@ public:
   typedef Reference const reference;
   typedef Category iterator_category;
 
-  const_iterator() = delete;
+//   const_iterator() = delete;
   explicit const_iterator(pointer ptr) : _ptr(ptr){};
-  const_iterator(const_iterator const &) = default;
+  const_iterator(const_iterator const & src) : _ptr(src._ptr) {};
   const_iterator(iterator<Category, T> const &src) : _ptr(src._ptr){};
-  virtual ~const_iterator() = default;
-  const_iterator &operator=(const const_iterator &rhs) = default;
+  virtual ~const_iterator() {};
+  const_iterator &operator=(const const_iterator &rhs) {
+	  if (*this != rhs) this->_ptr = rhs._ptr;
+  };
 
   // increment/decrement
   virtual const_iterator &operator++() {
@@ -324,7 +328,7 @@ public:
   typedef typename It::iterator_category iterator_category;
 
   forward_iterator() : input_iterator<T>(), output_iterator<T>(), It() {
-    this->_ptr(nullptr);
+    this->_ptr(NULL);
   }
 
   forward_iterator<T> &operator++() {
@@ -360,7 +364,7 @@ public:
   typedef typename It::iterator_category iterator_category;
 
   const_forward_iterator() : const_input_iterator<T>(), It() {
-    this->_ptr(nullptr);
+    this->_ptr(NULL);
   }
 
   const_forward_iterator<T> &operator++() {
@@ -730,27 +734,27 @@ public:
   typedef
       typename iterator_traits<Iterator>::iterator_category iterator_category;
 
-  constexpr reverse_iterator() {}
-  constexpr explicit reverse_iterator(iterator_type it) : baseIt(it) {}
-  constexpr reverse_iterator(reverse_iterator<Iterator> const &revIt)
+  reverse_iterator() {}
+  explicit reverse_iterator(iterator_type it) : baseIt(it) {}
+  reverse_iterator(reverse_iterator<Iterator> const &revIt)
       : baseIt(revIt.baseIt) {}
 
   iterator_type base() const { return baseIt; }
   // arithmetic
-  constexpr reverse_iterator &operator++() {
+  reverse_iterator &operator++() {
     --baseIt;
     return *this;
   }
-  constexpr reverse_iterator operator++(int) {
+  reverse_iterator operator++(int) {
     reverse_iterator<Iterator> tmp(baseIt);
     ++*this;
     return tmp;
   }
-  constexpr reverse_iterator &operator--() {
+  reverse_iterator &operator--() {
     ++baseIt;
     return *this;
   }
-  constexpr reverse_iterator operator--(int) {
+  reverse_iterator operator--(int) {
     reverse_iterator<Iterator> tmp(baseIt);
     --*this;
     return tmp;
@@ -830,8 +834,8 @@ public:
     return (a.base() >= b.base());
   };
   // access
-  constexpr reference operator*() const { return *prev(baseIt); }
-  constexpr pointer operator->() const { return addressof(operator*()); }
+  reference operator*() const { return *prev(baseIt); }
+  pointer operator->() const { return addressof(operator*()); }
   typename ft::enable_if<Iterator::iterator_category ==
                              random_access_iterator_tag(),
                          reference>::type

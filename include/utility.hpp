@@ -6,12 +6,14 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 12:07:37 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/14 09:43:43 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/14 16:28:33 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILITY_HPP
 # define UTILITY_HPP
+
+# include <cstddef>
 
 namespace ft {
 
@@ -19,10 +21,10 @@ namespace ft {
     //---------------------------------------//
 template <class T, T v>
 struct integral_constant {
-	static constexpr T value = v;
+	static const T					value = v;
 	typedef T						value_type;
 	typedef integral_constant<T,v>	type;
-	constexpr operator value_type() { return value; }
+	operator value_type() { return value; }
 };
 
 typedef integral_constant<bool, true>	true_type;
@@ -48,10 +50,10 @@ template<>
 struct is_integral<bool> : true_type {};
 template<>
 struct is_integral<char> : true_type {};
-template<>
-struct is_integral<char16_t> : true_type {};
-template<>
-struct is_integral<char32_t> : true_type {};
+// template<>
+// struct is_integral<char16_t> : true_type {};
+// template<>
+// struct is_integral<char32_t> : true_type {};
 template<>
 struct is_integral<wchar_t> : true_type {};
 template<>
@@ -130,7 +132,7 @@ bool	lexicographical_compare(InputIterator1 first1, InputIterator1 last1,
     //  addressof //
     //---------------------------------------//
 template<class T>
-constexpr T*	addressof(T& arg) noexcept {
+T*	addressof(T& arg) {
     return &arg;
 }
 

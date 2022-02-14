@@ -46,43 +46,66 @@ QUIT	= \033[0m
 
 # VARIABLES
 
-NAME	=	ft_containers
-SRCS	=	$(wildcard tests/%.cpp)
+NAME	=	containers
+SRCS	=	$(shell find tests -type f -name "*.cpp")
 DIR_O	=	obj/
 OBJS	=	$(SRCS:tests/%.cpp=obj/%.o)
-INCL	=	$(wildcard include/%.hpp)
-CC		=	clang++
-CFLAGS	=	-Wall -Wextra -Werror -std=c++98 -Wc++98-compat -I$(INCL)
-DBFLAGS =	-g -fsanitize=address
+INCL	=	$(shell find include -type f -name "*.hpp")
+
+# CPP
+
+CXX				= clang++
+CXX_LANG_FLAGS	= -std=c++98
+CXX_WARN_FLAGS	= -Wall -Wextra -Werror
+CXX_INCL_FLAGS	= -I.  -Iinclude
+# MY_CXX_MACRO_FLAGS	= -DMYFOO=32
+CXX_OPTIM_FLAGS= -g
+CXXFLAGS	= $(CXX_LANG_FLAGS) $(CXX_WARN_FLAGS) \
+	$(CXX_INCL_FLAGS) $(CXX_OPTIM_FLAGS)
 
 # RULES
 
-all:	$(NAME)
-
-$(NAME):	$(OBJS)
-	@$(ECHO) "$(GREEN) '$(NAME)' objects compiled.$(QUIT)"
-	@$(ECHO) "$(GREEN) Creating '$(NAME)'$(QUIT)"
-	@$(CC) $(CFLAGS) -o $(NAME) $(OBJS)
-	@$(ECHO) "$(GREEN) $(NAME) executable CREATED$(QUIT)"
-
-$(DIR_O)%.o:	tests/%.cpp $(INCL)
-	@$(CC) -c $(CFLAGS) $< -o $@
-	@$(ECHO) "$(GREEN) $@$(QUIT)"
+all:	$(OBJS) $(NAME)
 
 $(OBJS):	| $(DIR_O)
 
 $(DIR_O):
-	mkdir -p $(DIR_O)
+	@mkdir -p $(DIR_O)
+
+$(DIR_O)%.o : tests/%.cpp $(INCL)
+	$(eval FNAME=$(subst .o,,$@))
+	$(eval FNAME=$(subst $(DIR_O),,$(FNAME)))
+
+	@$(eval CXXFLAGS=$(subst -std=c++11,-std=c++98,$(CXXFLAGS)))
+	@$(CXX) $(CXXFLAGS) -D_IS_TEST -o $@ -c $<
+	@$(CXX) $(CXXFLAGS) $@ -o ft_$(FNAME)
+	@$(ECHO) "$(GREEN) ft_$(FNAME)$(QUIT)"
+	@./ft_$(FNAME) > ft_$(FNAME).log
+
+	@$(eval CXXFLAGS=$(subst -std=c++98,-std=c++11,$(CXXFLAGS)))
+	@$(CXX) $(CXXFLAGS) -o $@ -c $<
+	@$(CXX) $(CXXFLAGS) $@ -o std_$(FNAME)
+	@$(ECHO) "$(GREEN) std_$(FNAME)$(QUIT)"
+	@./std_$(FNAME) > std_$(FNAME).log
+
+	@(diff std_$(FNAME).log ft_$(FNAME).log > $(FNAME).diff \
+		&& printf "$(GREEN)No diffs ;)$(QUIT)\n" && rm $(FNAME).diff) \
+		|| (printf "$(RED)Diffs :( $(FNAME).diff$(QUIT)\n" && cat $(FNAME).diff)
+
+	@printf "$(GREY)[ ----- Time ----- ]$(QUIT)\n"
+	@(time -p ./std_$(FNAME) > /dev/null) 2>&1 | grep "real" | sed 's/real/std/'
+	@(time -p ./ft_$(FNAME) > /dev/null) 2>&1 | grep "real" | sed 's/real/ft /'
+
+$(NAME):	$(OBJS)
 
 clean:
 	@$(ECHO) "$(RED)Deleting .o files$(QUIT)"
 	@rm -fr $(DIR_O)
-	@rm -fr *.replace
 
 fclean:	clean
-	@$(ECHO) "$(RED)Deleting '$(NAME)' executable"
-	@rm -fr $(NAME) *.dSYM
-	@$(ECHO) "$(RED) '$(NAME)' executable DELETED$(QUIT)"
+	@$(ECHO) "$(RED)Deleting 'ft_* and std_*' executables"
+	@rm -fr std_* ft_* *.dSYM *.log
+	@$(ECHO) "$(RED) '$(NAME)' executables DELETED$(QUIT)"
 
 re:		fclean all
 
