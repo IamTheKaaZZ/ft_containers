@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 12:07:37 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/14 16:28:33 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/15 11:24:58 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,11 +93,33 @@ struct enable_if<true, T> {
 //Test whether the elements in two ranges are equal
 //Compares the elements in the range [first1,last1) with those in the range beginning at first2,
 //and returns true if all of the elements in both ranges match.
-template <class InputIterator1, class InputIterator2>
-bool	equal(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
+template <class InputIt1, class InputIt2>
+bool	equal(InputIt1 first1, InputIt1 last1, InputIt2 first2)
 {
 	while (first1 != last1) {
-		if (!(*first1 == *first2))   // or: if (!pred(*first1,*first2)), for version 2
+		if (!(*first1 == *first2))
+			return false;
+		++first1;
+		++first2;
+  	}
+	return true;
+}
+
+/*
+binary predicate which returns ​true if the elements should be treated as equal.
+The signature of the predicate function should be equivalent to the following:
+
+ bool pred(const Type1 &a, const Type2 &b);
+
+While the signature does not need to have const &,
+the function must not modify the objects passed to it and must be able to accept all values of type
+(possibly const) Type1 and Type2 regardless of value category (thus, Type1 & is not allowed).
+*/
+template <class InputIt1, class InputIt2, class BinaryPredicate>
+bool	equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, BinaryPredicate p)
+{
+	while (first1 != last1) {
+		if (!p(*first1,*first2))
 			return false;
 		++first1;
 		++first2;
@@ -115,14 +137,29 @@ bool	equal(InputIterator1 first1, InputIterator1 last1, InputIterator2 first2)
 //The result of comparing these first non-matching elements is the result of the lexicographical comparison.
 //If both sequences compare equal until one of them ends,
 //the shorter sequence is lexicographically less than the longer one.
-template <class InputIterator1, class InputIterator2>
-bool	lexicographical_compare(InputIterator1 first1, InputIterator1 last1,
-                                InputIterator2 first2, InputIterator2 last2)
+template <class InputIt1, class InputIt2>
+bool	lexicographical_compare(InputIt1 first1, InputIt1 last1,
+            InputIt2 first2, InputIt2 last2)
 {
 	while (first1 != last1)
 	{
 		if (first2 == last2 || *first2 < *first1) return false;
 		else if (*first1 < *first2) return true;
+		++first1;
+		++first2;
+	}
+	return (first2!=last2);
+}
+
+//Elements are compared using the given binary comparison function comp.
+template <class InputIt1, class InputIt2, class Compare>
+bool	lexicographical_compare(InputIt1 first1, InputIt1 last1,
+            InputIt2 first2, InputIt2 last2, Compare comp)
+{
+	while (first1 != last1)
+	{
+		if (first2 == last2 || comp(*first2, *first1)) return false;
+		else if (comp(*first1, *first2)) return true;
 		++first1;
 		++first2;
 	}
