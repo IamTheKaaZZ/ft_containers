@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 17:07:51 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/15 11:33:06 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/15 15:06:41 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <iterator>
 # include <algorithm>
 # include <bits/stdc++.h>
+# include <memory>
 namespace ft = std;
 #else
 # include "../include/Iterators.hpp"
@@ -63,6 +64,18 @@ bool mypredicate (int i, int j) {
 
 bool mycomp (char c1, char c2)
 { return std::tolower(c1)<std::tolower(c2); }
+
+struct unreferenceable {
+  int x;
+  unreferenceable* operator&() { return NULL; }
+};
+
+void print (unreferenceable* m) {
+  if (m) std::cout << m->x << '\n';
+  else std::cout << "[null pointer]\n";
+}
+
+class cls {};
 
 void	util_tests() {
 	//integral_constant
@@ -140,6 +153,73 @@ void	util_tests() {
   	std::cout << "Using mycomp as comparison object: ";
   	std::cout << ft::lexicographical_compare(foo,foo+5,bar,bar+9,mycomp);
   	std::cout << '\n';
+	
+	//remove_cv
+	std::cout << "\nREMOVE_CV\n";
+	std::cout << std::boolalpha;
+ 
+    typedef ft::remove_cv<const int>::type				type1;
+    typedef ft::remove_cv<volatile int>::type			type2;
+    typedef ft::remove_cv<const volatile int>::type		type3;
+    typedef ft::remove_cv<const volatile int*>::type	type4;
+    typedef ft::remove_cv<int* const volatile>::type	type5;
+ 
+    std::cout << ft::is_same<type1, int>::value << "\n";
+    std::cout << ft::is_same<type2, int>::value << "\n";
+    std::cout << ft::is_same<type3, int>::value << "\n";
+    std::cout << ft::is_same<type4, int*>::value << " "
+              << ft::is_same<type4, const volatile int*>::value << "\n";
+    std::cout << ft::is_same<type5, int*>::value << "\n";
+
+	//is_floating_point
+	std::cout << "\nIS_FLOATING_POINT\n";
+	std::cout << std::boolalpha;
+    std::cout << "trivial: " << ft::is_floating_point<trivial>::value << '\n';
+    std::cout << "  float: " << ft::is_floating_point<float>::value << '\n';
+    std::cout << " float&: " << ft::is_floating_point<float&>::value << '\n';
+    std::cout << " double: " << ft::is_floating_point<double>::value << '\n';
+    std::cout << "double&: " << ft::is_floating_point<double&>::value << '\n';
+    std::cout << "    int: " << ft::is_floating_point<int>::value << '\n';
+
+	//is_arithmetic
+	std::cout << "\nIS_ARITHMETIC\n";
+	std::cout << std::boolalpha
+        << "trivial:     " << ft::is_arithmetic<trivial>::value     << '\n' // false
+        << "bool:        " << ft::is_arithmetic<bool>::value        << '\n' // true
+        << "int:         " << ft::is_arithmetic<int>::value         << '\n' // true
+        << "int const:   " << ft::is_arithmetic<int const>::value   << '\n' // true
+        << "int &:       " << ft::is_arithmetic<int&>::value        << '\n' // false
+        << "int *:       " << ft::is_arithmetic<int*>::value        << '\n' // false
+        << "float:       " << ft::is_arithmetic<float>::value       << '\n' // true
+        << "float const: " << ft::is_arithmetic<float const>::value << '\n' // true
+        << "float &:     " << ft::is_arithmetic<float&>::value      << '\n' // false
+        << "float *:     " << ft::is_arithmetic<float*>::value      << '\n' // false
+        << "char:        " << ft::is_arithmetic<char>::value        << '\n' // true
+        << "char const:  " << ft::is_arithmetic<char const>::value  << '\n' // true
+        << "char &:      " << ft::is_arithmetic<char&>::value       << '\n' // false
+        << "char *:      " << ft::is_arithmetic<char*>::value       << '\n' // false
+        ;
+
+	//is_member_pointer
+	std::cout << "\nIS_MEMBER_POINTER\n";
+    std::cout << (ft::is_member_pointer<int(cls::*)>::value
+                     ? "T is member pointer"
+                     : "T is not a member pointer") << '\n';
+    std::cout << (ft::is_member_pointer<int>::value
+                     ? "T is member pointer"
+                     : "T is not a member pointer") << '\n';
+
+	//is_array
+	std::cout << "\nIS_MEMBER_POINTER\n";
+	std::cout << std::boolalpha;
+    std::cout << ft::is_array<trivial>::value << '\n';
+    std::cout << ft::is_array<trivial[]>::value << '\n';
+    std::cout << ft::is_array<trivial[3]>::value << '\n';
+    std::cout << ft::is_array<float>::value << '\n';
+    std::cout << ft::is_array<int>::value << '\n';
+    std::cout << ft::is_array<int[]>::value << '\n';
+    std::cout << ft::is_array<int[3]>::value << '\n';
+
 }
 
 int	main() {

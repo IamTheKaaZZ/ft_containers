@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 12:07:37 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/15 11:24:58 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/15 15:04:43 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,37 +45,153 @@ struct is_same<T, T> : true_type {};
 //none of the below => NOT integral
 template<class T>
 struct is_integral : false_type {};
-//Check if type is integral => specializations of the template
+//Check if type is integral (including const/volatile qualifications)
+//	=> specializations of the template
 template<>
 struct is_integral<bool> : true_type {};
 template<>
+struct is_integral<const bool> : true_type {};
+template<>
+struct is_integral<const volatile bool> : true_type {};
+template<>
 struct is_integral<char> : true_type {};
-// template<>
-// struct is_integral<char16_t> : true_type {};
-// template<>
-// struct is_integral<char32_t> : true_type {};
+template<>
+struct is_integral<const char> : true_type {};
+template<>
+struct is_integral<const volatile char> : true_type {};
 template<>
 struct is_integral<wchar_t> : true_type {};
 template<>
+struct is_integral<const wchar_t> : true_type {};
+template<>
+struct is_integral<const volatile wchar_t> : true_type {};
+template<>
 struct is_integral<signed char> : true_type {};
+template<>
+struct is_integral<const signed char> : true_type {};
+template<>
+struct is_integral<const volatile signed char> : true_type {};
 template<>
 struct is_integral<short int> : true_type {};
 template<>
+struct is_integral<const short int> : true_type {};
+template<>
+struct is_integral<const volatile short int> : true_type {};
+template<>
 struct is_integral<int> : true_type {};
+template<>
+struct is_integral<const int> : true_type {};
+template<>
+struct is_integral<const volatile int> : true_type {};
 template<>
 struct is_integral<long int> : true_type {};
 template<>
+struct is_integral<const long int> : true_type {};
+template<>
+struct is_integral<const volatile long int> : true_type {};
+template<>
 struct is_integral<long long int> : true_type {};
+template<>
+struct is_integral<const long long int> : true_type {};
+template<>
+struct is_integral<const volatile long long int> : true_type {};
 template<>
 struct is_integral<unsigned char> : true_type {};
 template<>
+struct is_integral<const unsigned char> : true_type {};
+template<>
+struct is_integral<const volatile unsigned char> : true_type {};
+template<>
 struct is_integral<unsigned short int> : true_type {};
+template<>
+struct is_integral<const unsigned short int> : true_type {};
+template<>
+struct is_integral<const volatile unsigned short int> : true_type {};
 template<>
 struct is_integral<unsigned int> : true_type {};
 template<>
+struct is_integral<const unsigned int> : true_type {};
+template<>
+struct is_integral<const volatile unsigned int> : true_type {};
+template<>
 struct is_integral<unsigned long int> : true_type {};
 template<>
+struct is_integral<const unsigned long int> : true_type {};
+template<>
+struct is_integral<const volatile unsigned long int> : true_type {};
+template<>
 struct is_integral<unsigned long long int> : true_type {};
+template<>
+struct is_integral<const unsigned long long int> : true_type {};
+template<>
+struct is_integral<const volatile unsigned long long int> : true_type {};
+
+    //  remove_cv //
+    //---------------------------------------//
+//Remove const/volatile from type
+template< class T > struct remove_cv                   { typedef T type; };
+template< class T > struct remove_cv<const T>          { typedef T type; };
+template< class T > struct remove_cv<volatile T>       { typedef T type; };
+template< class T > struct remove_cv<const volatile T> { typedef T type; };
+
+    //  is_floating_point //
+    //---------------------------------------//
+template< class T >
+struct is_floating_point
+     : integral_constant<
+         bool,
+         is_same<float, typename remove_cv<T>::type>::value  ||
+         is_same<double, typename remove_cv<T>::type>::value  ||
+         is_same<long double, typename remove_cv<T>::type>::value
+     > {};
+
+    //  is_arithmetic //
+    //---------------------------------------//
+template< class T >
+struct is_arithmetic : integral_constant<bool,
+        is_integral<T>::value || is_floating_point<T>::value> {};
+
+//Not implementing is_enum
+
+    //  is_pointer //
+    //---------------------------------------//
+template<class T>
+struct is_pointer : false_type {};
+template<class T>
+struct is_pointer<T*> : true_type {};
+template<class T>
+struct is_pointer<T* const> : true_type {};
+template<class T>
+struct is_pointer<T* volatile> : true_type {};
+template<class T>
+struct is_pointer<T* const volatile> : true_type {};
+
+    //  is_member_pointer //
+    //---------------------------------------//
+template< class T >
+struct is_member_pointer_helper         : false_type {};
+template< class T, class U >
+struct is_member_pointer_helper<T U::*> : true_type {};
+template< class T >
+struct is_member_pointer : 
+    is_member_pointer_helper<typename remove_cv<T>::type> {};
+
+    //  is_scalar //
+    //---------------------------------------//
+template< class T >
+struct is_scalar : integral_constant<bool,
+        			is_arithmetic<T>::value     ||
+                    is_pointer<T>::value        ||
+                    is_member_pointer<T>::value> {};
+
+    //  is_array //
+    //---------------------------------------//
+template<class T>
+struct is_array : false_type {};
+template<class T>
+struct is_array<T[]> : true_type {};
+template<class T, std::size_t N>
+struct is_array<T[N]> : true_type {};
 
     //  enable_if //
     //---------------------------------------//
@@ -129,14 +245,16 @@ bool	equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, BinaryPredicate p)
 
     //  lexographical_compare //
     //---------------------------------------//
-//Returns true if the range [first1,last1) compares lexicographically less than the range [first2,last2).
-//A lexicographical comparison is the kind of comparison
-//-> generally used to sort words alphabetically in dictionaries;
-//It involves comparing sequentially the elements that have the same position in both ranges
-//against each other until one element is not equivalent to the other.
-//The result of comparing these first non-matching elements is the result of the lexicographical comparison.
-//If both sequences compare equal until one of them ends,
-//the shorter sequence is lexicographically less than the longer one.
+/*
+Returns true if the range [first1,last1) compares lexicographically less than the range [first2,last2).
+A lexicographical comparison is the kind of comparison
+-> generally used to sort words alphabetically in dictionaries;
+It involves comparing sequentially the elements that have the same position in both ranges
+against each other until one element is not equivalent to the other.
+The result of comparing these first non-matching elements is the result of the lexicographical comparison.
+If both sequences compare equal until one of them ends,
+the shorter sequence is lexicographically less than the longer one.
+*/
 template <class InputIt1, class InputIt2>
 bool	lexicographical_compare(InputIt1 first1, InputIt1 last1,
             InputIt2 first2, InputIt2 last2)
@@ -164,13 +282,6 @@ bool	lexicographical_compare(InputIt1 first1, InputIt1 last1,
 		++first2;
 	}
 	return (first2!=last2);
-}
-
-    //  addressof //
-    //---------------------------------------//
-template<class T>
-T*	addressof(T& arg) {
-    return &arg;
 }
 
     //  pair //
