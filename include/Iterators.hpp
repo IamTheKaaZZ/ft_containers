@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/18 16:31:42 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:18:17 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -494,7 +494,7 @@ public:
 ///  @paragraph ra_it Random Access (Const) Iterator ///
 ///---------------------------------------///
 /**
- * @brief Commented example of (const) bidirectional iterator and what it should
+ * @brief Commented example of (const) random access iterator and what it should
  * implement
  *
  * @tparam T = data type
@@ -787,7 +787,7 @@ Iter _prev(random_access_iterator_tag, Iter &it,
  */
 template <class Iter>
 Iter prev(Iter &it, typename iterator_traits<Iter>::difference_type n = 1) {
-  return _prev(__iterator_category(it), it, n);
+  return _prev(ft::__iterator_category(it), it, n);
 }
 
 //  distance //
@@ -841,7 +841,12 @@ typename iterator_traits<Iter>::difference_type distance(Iter first,
 
 ///  Reverse (Const) Iterator ///
 ///---------------------------------------///
-template <class Iterator> class reverse_iterator {
+template <class Iterator> class reverse_iterator : iterator<
+	typename iterator_traits<Iterator>::iterator_category,
+	typename iterator_traits<Iterator>::value_type,
+	typename iterator_traits<Iterator>::difference_type,
+	typename iterator_traits<Iterator>::pointer,
+	typename iterator_traits<Iterator>::reference>{
 
 public:
   typedef Iterator iterator_type;
@@ -852,10 +857,13 @@ public:
   typedef
       typename iterator_traits<Iterator>::iterator_category iterator_category;
 
-  reverse_iterator() {}
+  reverse_iterator() : baseIt() {}
   explicit reverse_iterator(iterator_type it) : baseIt(it) {}
-  reverse_iterator(reverse_iterator<Iterator> const &revIt)
+  reverse_iterator(reverse_iterator const &revIt)
       : baseIt(revIt.baseIt) {}
+  template<class Iter>
+  reverse_iterator(reverse_iterator<Iter> const &revIt)
+      : baseIt(revIt.base()) {}
 
   iterator_type base() const { return baseIt; }
   // arithmetic
@@ -914,13 +922,13 @@ public:
     return (a.base() == b.base());
   };
   friend bool operator!=(reverse_iterator const &a, reverse_iterator const &b) {
-    return (a.base != b.base());
+    return (a.base() != b.base());
   };
   friend bool operator<(reverse_iterator const &a, reverse_iterator const &b) {
     return (a.base() < b.base());
   };
   friend bool operator>(reverse_iterator const &a, reverse_iterator const &b) {
-    return (a.base > b.base);
+    return (a.base() > b.base());
   };
   friend bool operator<=(reverse_iterator const &a, reverse_iterator const &b) {
     return (a.base() <= b.base());
@@ -929,7 +937,9 @@ public:
     return (a.base() >= b.base());
   };
   // access
-  reference operator*() const { return *prev(baseIt); }
+  reference operator*() const {
+	  iterator_type	tmp = baseIt;
+	  return *--tmp; }
   pointer operator->() const { return addressof(operator*()); }
   reference operator[](difference_type n) const { return baseIt[-n - 1]; }
 

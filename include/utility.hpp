@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 12:07:37 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/17 11:53:55 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/23 10:22:22 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -275,6 +275,34 @@ bool lexicographical_compare(InputIt1 first1, InputIt1 last1, InputIt2 first2,
     ++first2;
   }
   return (first2 != last2);
+}
+
+//  addressof //
+//---------------------------------------//
+
+/**
+ * @brief Return the address fo an object
+ *
+ * @tparam T
+ * @param arg
+ * @return enable_if<is_object<T>::value, T*>::type => T*
+ */
+template <class T>
+typename enable_if<is_object<T>::value, T *>::type addressof(T &arg) {
+  return reinterpret_cast<T *>(
+      &const_cast<char &>(reinterpret_cast<const volatile char &>(arg)));
+}
+
+/**
+ * @brief Return the adress of anything but an object
+ *
+ * @tparam T
+ * @param arg
+ * @return enable_if<!is_object<T>::value, T*>::type => T*
+ */
+template <class T>
+typename enable_if<!is_object<T>::value, T *>::type addressof(T &arg) {
+  return &arg;
 }
 
 //  pair //

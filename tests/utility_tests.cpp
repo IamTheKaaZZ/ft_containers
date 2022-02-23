@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 17:07:51 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/17 11:54:48 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:25:02 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ namespace ft = std;
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
+#include <functional>
+#include <utility>
 
 template <unsigned n>
 struct factorial : ft::integral_constant<int, n * factorial<n - 1>::value> {};
@@ -214,6 +216,17 @@ void util_tests() {
   std::cout << ft::is_array<int>::value << '\n';
   std::cout << ft::is_array<int[]>::value << '\n';
   std::cout << ft::is_array<int[3]>::value << '\n';
+
+  // is_array
+  std::cout << "\nPAIR\n";\
+  int n = 1;
+    int y[5] = {1, 2, 3, 4, 5};
+ 
+    // build a pair from two ints
+    ft::pair<int, int> p1 = ft::make_pair(n, y[1]);
+    std::cout << "The value of p1 is "
+              << "(" << p1.first << ", " << p1.second << ")\n";
+ 
 }
 
 int main() {

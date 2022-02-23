@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/18 12:55:53 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/18 16:54:18 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/23 10:43:05 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,44 @@ public:
   bool operator==(const MyIterator &rhs) const { return p == rhs.p; }
   bool operator!=(const MyIterator &rhs) const { return p != rhs.p; }
   int &operator*() { return *p; }
+};
+
+class BidirectIt : public ft::iterator<ft::bidirectional_iterator_tag, int> {
+  int *p;
+
+public:
+  typedef ft::iterator<ft::bidirectional_iterator_tag, int> It;
+  typedef It::value_type value_type;
+  typedef It::difference_type difference_type;
+  typedef It::pointer pointer;
+  typedef It::reference reference;
+  typedef It::iterator_category iterator_category;
+
+  BidirectIt() : p(NULL) {}
+  BidirectIt(int *x) : p(x) {}
+
+  BidirectIt &operator++() {
+    ++p;
+    return *this;
+  }
+  BidirectIt operator++(int) {
+    BidirectIt tmp(*this);
+    ++*this;
+    return tmp;
+  }
+  bool operator==(BidirectIt const &rhs) { return (this->p == rhs.p); }
+  bool operator!=(BidirectIt const &rhs) { return !(*this == rhs); }
+  reference operator*() const { return *p; }
+  pointer operator->() const { return p; }
+  BidirectIt &operator--() {
+    this->p--;
+    return *this;
+  };
+  BidirectIt operator--(int) {
+    BidirectIt tmp(*this);
+    --*this;
+    return tmp;
+  };
 };
 
 /**
@@ -218,6 +256,28 @@ operator!=(const istream_iterator<_Tp, _CharT, _Traits, _Dist> &__x,
   return !__x._M_equal(__y);
 }
 
+template <typename T, size_t SIZE> class Stack {
+  T arr[SIZE];
+  size_t pos;
+
+public:
+  Stack() : pos(0) {}
+  T pop() { return arr[--pos]; }
+  Stack &push(const T &t) {
+    arr[pos++] = t;
+    return *this;
+  }
+  // we wish that looping on Stack would be in LIFO order
+  // thus we use std::reverse_iterator as an adaptor to existing iterators
+  // (which are in this case the simple pointers: [arr, arr+pos)
+  ft::reverse_iterator<BidirectIt> begin() {
+    return ft::reverse_iterator<BidirectIt>(arr + pos);
+  }
+  ft::reverse_iterator<BidirectIt> end() {
+    return ft::reverse_iterator<BidirectIt>(arr);
+  }
+};
+
 void tests() {
   std::cout << "\nINPUT_ITERATOR\n";
   Range<15, 25> range;
@@ -238,6 +298,14 @@ void tests() {
   std::istringstream str("0.1 0.2 0.3 0.4");
   std::partial_sum(istream_iterator<double>(str), istream_iterator<double>(),
                    ostream_iterator<double>(std::cout, ","));
+  std::cout << "\n";
+
+  std::cout << "\nREVERSE_ITERATOR\n";
+  Stack<int, 8> s;
+  s.push(5).push(15).push(25).push(35);
+  for (ft::reverse_iterator<BidirectIt> it = s.begin(); it != s.end(); it++) {
+    std::cout << *it << ' ';
+  }
 }
 
 int main() {
