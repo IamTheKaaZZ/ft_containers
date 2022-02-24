@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 17:07:51 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/23 11:25:02 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/02/23 11:31:58 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ namespace ft = std;
 #include <iostream>
 #include <stdlib.h>
 #include <vector>
+#include <map>
 #include <functional>
 #include <utility>
 
@@ -223,10 +224,28 @@ void util_tests() {
     int y[5] = {1, 2, 3, 4, 5};
  
     // build a pair from two ints
-    ft::pair<int, int> p1 = ft::make_pair(n, y[1]);
+    ft::pair<int, int> p = ft::make_pair(n, y[1]);
     std::cout << "The value of p1 is "
-              << "(" << p1.first << ", " << p1.second << ")\n";
- 
+              << "(" << p.first << ", " << p.second << ")\n";
+
+	// Using the constructor to declare and initialize a pair
+   ft::pair <int, double> p1 ( 10, 1.1e-2 );
+
+   // Compare using the helper function to declare and initialize a pair
+   ft::pair <int, double> p2;
+   p2 = ft::make_pair ( 10, 2.22e-1 );
+
+   // Making a copy of a pair
+   ft::pair <int, double> p3 ( p1 );
+
+   std::cout.precision ( 3 );
+   std::cout << "The pair p1 is: ( " << p1.first << ", "
+        << p1.second << " )." << std::endl;
+   std::cout << "The pair p2 is: ( " << p2.first << ", "
+        << p2.second << " )." << std::endl;
+   std::cout << "The pair p3 is: ( " << p3.first << ", "
+        << p3.second << " )." << std::endl;
+
 }
 
 int main() {
