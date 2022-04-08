@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Vector.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: bcosters <bcosters@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/03/14 16:44:06 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/04/08 18:18:25 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef VECTOR_HPP
 #define VECTOR_HPP
 
+#include "AllocatorTraits.hpp"
 #include "Iterators.hpp"
 #include <cassert>
 #include <cstddef>
@@ -23,10 +24,9 @@ namespace ft {
 
 template <class T, class Allocator = std::allocator<T>> struct vectorBase {
   // Implicit vector data
-  typedef
-      typename __gnu_cxx::__alloc_traits<Allocator>::template rebind<T>::other
-          TAllocType;
-  typedef typename __gnu_cxx::__alloc_traits<TAllocType>::pointer pointer;
+  typedef typename ft::alloc_traits<Allocator>::template rebind<T>::other
+      TAllocType;
+  typedef typename ft::alloc_traits<Allocator>::pointer pointer;
   struct vectorImplData {
     pointer start;
     pointer finish;
@@ -64,13 +64,11 @@ public:
   }
   ~vectorBase() { deallocate(implV.start, implV.endOfStorage - implV.start); }
   pointer allocate(size_t n) {
-    typedef __gnu_cxx::__alloc_traits<TAllocType> Tr;
-    return (n != 0 ? Tr::allocate(implV, n) : pointer());
+    return (n != 0 ? TAllocType::allocate(implV, n) : pointer());
   }
   void deallocate(pointer p, size_t n) {
-    typedef __gnu_cxx::__alloc_traits<TAllocType> Tr;
     if (p) {
-      Tr::deallocate(implV, p, n);
+      TAllocType::deallocate(implV, p, n);
     }
   }
 
@@ -86,7 +84,7 @@ template <class T, class Allocator = std::allocator<T>>
 class vector : protected vectorBase<T, Allocator> {
   typedef vectorBase<T, Allocator> Base;
   typedef typename Base::TAllocType TAllocType;
-  typedef __gnu_cxx::__alloc_traits<TAllocType> AllocTraits;
+  typedef ft::alloc_traits<TAllocType> AllocTraits;
 
 public:
   typedef T value_type;
@@ -111,10 +109,9 @@ public:
     fillInitialize(count, value);
   }
   vector(const vector &other)
-      : Base(other.size(),
-             AllocTraits::_S_select_on_copy(other.getTAllocator)) {
-    std::__uninitialized_copy_a(other.begin(), other.end(), this->implV.start,
-                                getTAllocator());
+      : Base(other.size(), AllocTraits::select_on_copy(other.getTAllocator)) {
+    this->implV.finish =
+        std::uninitialized_copy(other.begin(), other.end(), this->implV.start);
   }
   template <class InputIt>
   vector(InputIt first, InputIt last, const allocator_type &alloc = Allocator())
@@ -124,7 +121,9 @@ public:
     initializeDispatch(first, last, Integral());
   }
   ~vector() {
-    std::_Destroy(this->implV.start, this->implV.finish, getTAllocator());
+    for (pointer tmp = this->implV.start; tmp != this->implV.finish; tmp++) {
+      AllocTraits::destroy(get_allocator(), tmp);
+    }
   }
   vector &operator=(vector const &rhs);
   void assign(size_type n, value_type const &val) { fillAssign(n, val); }
@@ -196,7 +195,7 @@ public:
   const T *data() const { return dataPtr(this->implV.start); }
   void push_back(const value_type &val) {
     if (this->implV.finish != this->implV.endOfStorage) {
-      AllocTraits::construct(this->implV, this->implV.finish, val);
+      allocator_type::construct(this->implV.finish, val);
       ++this->implV.finish;
     } else
       reallocInsert(end(), val);
@@ -210,31 +209,19 @@ public:
   void insert(iterator position, size_type n, const value_type &val) {
     fillInsert(position, n, val);
   }
-      template<typename InputIt>
-	void
-	insert(iterator position, InputIt first,
-	       InputIt last)
-	{
-	  // Check whether it's an integral type.  If so, it's not an iterator.
-	  typedef typename ft::is_integral<InputIt>::type Integral;
-	  insertDispatch(position, first, last, Integral());
-	}
-      iterator
-      erase(iterator position)
-      { return eraseV(position); }
-      iterator
-      erase(iterator first, iterator last)
-      { return eraseV(first, last); }
-      void
-      swap(vector& other) 
-      {
-	this->implV.swapData(other.implV);
-	AllocTraits::_S_on_swap(getTAllocator(),
-				  other.getTAllocator());
-      }
-      void
-      clear() 
-      { eraseAtEnd(this->implV.start); }
+  template <typename InputIt>
+  void insert(iterator position, InputIt first, InputIt last) {
+    // Check whether it's an integral type.  If so, it's not an iterator.
+    typedef typename ft::is_integral<InputIt>::type Integral;
+    insertDispatch(position, first, last, Integral());
+  }
+  iterator erase(iterator position) { return eraseV(position); }
+  iterator erase(iterator first, iterator last) { return eraseV(first, last); }
+  void swap(vector &other) {
+    this->implV.swapData(other.implV);
+    AllocTraits::_S_on_swap(getTAllocator(), other.getTAllocator());
+  }
+  void clear() { eraseAtEnd(this->implV.start); }
 
 protected:
   using Base::allocate;
