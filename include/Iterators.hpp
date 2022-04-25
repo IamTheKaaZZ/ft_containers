@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Iterators.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: bcosters <bcosters@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/03/14 15:07:54 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/04/25 13:00:43 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,24 +73,24 @@ public:
   typedef Reference reference;
   typedef Category iterator_category;
 
-  explicit iterator(pointer ptr) : _ptr(ptr){};
-  iterator(iterator const &src) : _ptr(src._ptr){};
+  //   explicit iterator(pointer ptr) : _ptr(ptr){};
+  //   iterator(iterator const &src) : _ptr(src._ptr){};
   virtual ~iterator(){};
-  iterator &operator=(const iterator &rhs) {
-    if (*this != rhs)
-      this->_ptr = rhs._ptr;
-  };
+  //   iterator &operator=(const iterator &rhs) {
+  //     if (*this != rhs)
+  //       this->_ptr = rhs._ptr;
+  //   };
 
-  //  increment/decrement
-  virtual iterator &operator++() {
-    _ptr++;
-    return *this;
-  }
-  virtual iterator operator++(int) {
-    iterator tmp(*this);
-    _ptr++;
-    return tmp;
-  }
+  //   //  increment/decrement
+  //   iterator &operator++() {
+  //     _ptr++;
+  //     return *this;
+  //   }
+  //   iterator operator++(int) {
+  //     iterator tmp(*this);
+  //     _ptr++;
+  //     return tmp;
+  //   }
   //   virtual iterator &operator--() = 0;
   //   virtual iterator operator--(int) = 0;
   //   arithmatic
@@ -108,12 +108,12 @@ public:
   //   const = 0; virtual friend bool operator<=(iterator const &, iterator
   //   const &) const = 0; virtual friend bool operator>=(iterator const &,
   //   iterator const &) const = 0; access
-  virtual reference operator*() const { return *(this->_ptr); }
+  //   reference operator*() const { return *(this->_ptr); }
   //   virtual pointer operator->() const = 0;
   //   virtual reference operator[](difference_type) const = 0;
 
-protected:
-  pointer _ptr;
+  // protected:
+  //   pointer _ptr;
 };
 
 template <class Category, class T, class Distance = ptrdiff_t,
@@ -127,25 +127,25 @@ public:
   typedef Reference const reference;
   typedef Category iterator_category;
 
-  explicit const_iterator(pointer ptr) : _ptr(ptr){};
-  const_iterator(const_iterator const &src) : _ptr(src._ptr){};
-  const_iterator(iterator<Category, T> const &src) : _ptr(src._ptr){};
+  //   explicit const_iterator(pointer ptr) : _ptr(ptr){};
+  //   const_iterator(const_iterator const &src) : _ptr(src._ptr){};
+  //   const_iterator(iterator<Category, T> const &src) : _ptr(src._ptr){};
   virtual ~const_iterator(){};
-  const_iterator &operator=(const const_iterator &rhs) {
-    if (*this != rhs)
-      this->_ptr = rhs._ptr;
-  };
+  //   const_iterator &operator=(const const_iterator &rhs) {
+  //     if (*this != rhs)
+  //       this->_ptr = rhs._ptr;
+  //   };
 
-  //   increment / decrement
-  virtual const_iterator &operator++() {
-    _ptr++;
-    return *this;
-  }
-  virtual const_iterator operator++(int) {
-    const_iterator tmp(*this);
-    _ptr++;
-    return tmp;
-  }
+  //   //   increment / decrement
+  //   virtual const_iterator &operator++() {
+  //     _ptr++;
+  //     return *this;
+  //   }
+  //   virtual const_iterator operator++(int) {
+  //     const_iterator tmp(*this);
+  //     _ptr++;
+  //     return tmp;
+  //   }
   //   virtual const_iterator &operator--() = 0;
   //   virtual const_iterator operator--(int) = 0;
   //   //   arithmatic
@@ -170,12 +170,12 @@ public:
   //   virtual friend bool operator>=(const_iterator const &,
   //                                  const_iterator const &) const = 0;
   //   access
-  virtual reference operator*() const { return *(this->_ptr); }
+  //   virtual reference operator*() const { return *(this->_ptr); }
   //   virtual pointer operator->() const = 0;
   //   virtual reference operator[](difference_type) const = 0;
 
-protected:
-  pointer _ptr;
+  // protected:
+  //   pointer _ptr;
 };
 
 // @paragraph input_it Input(Const) Iterator
@@ -196,8 +196,10 @@ public:
   typedef typename It::reference reference;
   typedef typename It::iterator_category iterator_category;
 
+  explicit input_iterator(pointer p) : _ptr(p) {}
+  input_iterator(const input_iterator &src) : _ptr(src._ptr) {}
   input_iterator &operator++() {
-    It::operator++();
+    this->_ptr++();
     return *this;
   }
   input_iterator operator++(int) {
@@ -211,8 +213,11 @@ public:
   virtual bool operator!=(input_iterator<T> const &rhs) {
     return !(*this == rhs);
   }
-  virtual value_type operator*() const { return It::operator*(); }
+  virtual value_type operator*() const { return *this->_ptr; }
   virtual pointer operator->() const { return this->_ptr; }
+
+protected:
+  pointer _ptr;
 };
 
 /**
@@ -232,8 +237,10 @@ public:
   typedef typename It::reference reference;
   typedef typename It::iterator_category iterator_category;
 
+  explicit const_input_iterator(pointer p) : _ptr(p) {}
+  const_input_iterator(const const_input_iterator &src) : _ptr(src._ptr) {}
   const_input_iterator &operator++() {
-    It::operator++();
+    this->_ptr++();
     return *this;
   }
   const_input_iterator operator++(int) {
@@ -247,8 +254,11 @@ public:
   virtual bool operator!=(const_input_iterator<T> const &rhs) {
     return !(*this == rhs);
   }
-  virtual value_type operator*() const { return It::operator*(); }
+  virtual value_type operator*() const { return *this->_ptr; }
   virtual pointer operator->() const { return this->_ptr; }
+
+protected:
+  pointer _ptr;
 };
 
 // @paragraph output_it Output(Const) Iterator
@@ -269,8 +279,10 @@ public:
   typedef typename It::reference reference;
   typedef typename It::iterator_category iterator_category;
 
+  explicit output_iterator(pointer p) : _ptr(p) {}
+  output_iterator(const output_iterator &src) : _ptr(src._ptr) {}
   output_iterator &operator++() {
-    It::operator++();
+    this->_ptr++();
     return *this;
   }
   output_iterator operator++(int) {
@@ -279,6 +291,9 @@ public:
     return tmp;
   }
   virtual reference operator*() const { return *(this->_ptr); }
+
+protected:
+  pointer _ptr;
 };
 template <class T>
 class const_output_iterator
@@ -292,8 +307,10 @@ public:
   typedef typename It::reference reference;
   typedef typename It::iterator_category iterator_category;
 
+  explicit const_output_iterator(pointer p) : _ptr(p) {}
+  const_output_iterator(const const_output_iterator &src) : _ptr(src._ptr) {}
   const_output_iterator &operator++() {
-    It::operator++();
+    this->_ptr++();
     return *this;
   }
   const_output_iterator operator++(int) {
@@ -302,6 +319,9 @@ public:
     return tmp;
   }
   virtual reference operator*() const { return *(this->_ptr); }
+
+protected:
+  pointer _ptr;
 };
 
 // @paragraph forward_it Forward(Const) Iterator
@@ -330,11 +350,11 @@ public:
     this->_ptr(NULL);
   }
 
-  forward_iterator<T> &operator++() {
-    It::operator++();
+  forward_iterator &operator++() {
+    inIt::operator++();
     return *this;
   }
-  forward_iterator<T> operator++(int) {
+  forward_iterator operator++(int) {
     forward_iterator<T> tmp(*this);
     ++*this;
     return tmp;
@@ -345,7 +365,7 @@ public:
   virtual bool operator!=(forward_iterator<T> const &rhs) {
     return !(*this == rhs);
   }
-  virtual value_type operator*() const { return It::operator*(); }
+  virtual value_type operator*() const { return inIt::operator*(); }
   virtual pointer operator->() const { return inIt::operator->(); }
 };
 template <class T>
@@ -362,27 +382,27 @@ public:
   typedef typename It::reference reference;
   typedef typename It::iterator_category iterator_category;
 
-  const_forward_iterator() : const_input_iterator<T>(), It() {
-    this->_ptr(NULL);
-  }
+    const_forward_iterator() : const_input_iterator<T>(), It() {
+      this->_ptr(NULL);
+    }
 
-  const_forward_iterator<T> &operator++() {
-    using It::operator++;
-    return *this;
-  }
-  const_forward_iterator<T> operator++(int) {
-    It tmp(*this);
-    ++*this;
-    return tmp;
-  }
-  virtual bool operator==(forward_iterator<T> const &rhs) {
-    return (this->_ptr == rhs._ptr);
-  }
-  virtual bool operator!=(forward_iterator<T> const &rhs) {
-    return !(*this == rhs);
-  }
-  virtual value_type operator*() const { return It::operator*(); }
-  virtual pointer operator->() const { return inIt::operator->(); }
+    const_forward_iterator &operator++() {
+      inIt::operator++();
+      return *this;
+    }
+    const_forward_iterator operator++(int) {
+      const_forward_iterator<T> tmp(*this);
+      ++*this;
+      return tmp;
+    }
+    virtual bool operator==(forward_iterator<T> const &rhs) {
+      return (this->_ptr == rhs._ptr);
+    }
+    virtual bool operator!=(forward_iterator<T> const &rhs) {
+      return !(*this == rhs);
+    }
+    virtual value_type operator*() const { return inIt::operator*(); }
+    virtual pointer operator->() const { return inIt::operator->(); }
 };
 
 // @paragraph bidirect_it Bidirectional(Const) Iterator
@@ -410,7 +430,7 @@ public:
   bidirectional_iterator() : forward_iterator<T>(), It() {}
 
   bidirectional_iterator &operator++() {
-    It::operator++();
+    fIt::operator++();
     return *this;
   }
   bidirectional_iterator operator++(int) {
@@ -424,7 +444,7 @@ public:
   virtual bool operator!=(bidirectional_iterator<T> const &rhs) {
     return !(*this == rhs);
   }
-  virtual value_type operator*() const { return It::operator*(); }
+  virtual value_type operator*() const { return fIt::operator*(); }
   virtual pointer operator->() const { return fIt::operator->(); }
   bidirectional_iterator<T> &operator--() {
     this->_ptr--;
@@ -453,7 +473,7 @@ public:
   const_bidirectional_iterator() : forward_iterator<T>(), It() {}
 
   const_bidirectional_iterator &operator++() {
-    It::operator++();
+    fIt::operator++();
     return *this;
   }
   const_bidirectional_iterator operator++(int) {
@@ -467,7 +487,7 @@ public:
   virtual bool operator!=(const_bidirectional_iterator<T> const &rhs) {
     return !(*this == rhs);
   }
-  virtual value_type operator*() const { return It::operator*(); }
+  virtual value_type operator*() const { return fIt::operator*(); }
   virtual pointer operator->() const { return fIt::operator->(); }
   const_bidirectional_iterator<T> &operator--() {
     this->_ptr--;
@@ -505,7 +525,7 @@ public:
   random_access_iterator<T>() : bidirectional_iterator<T>(), It() {}
 
   random_access_iterator<T> &operator++() {
-    It::operator++();
+    bIt::operator++();
     return *this;
   }
   random_access_iterator<T> operator++(int) {
@@ -519,7 +539,7 @@ public:
   virtual bool operator!=(random_access_iterator<T> const &rhs) {
     return !(*this == rhs);
   }
-  virtual value_type operator*() const { return It::operator*(); }
+  virtual value_type operator*() const { return bIt::operator*(); }
   virtual pointer operator->() const { return bIt::operator->(); }
   random_access_iterator<T> &operator--() {
     this->_ptr--;
@@ -563,16 +583,14 @@ public:
   bool operator<(random_access_iterator<T> const &rhs) {
     return rhs - *this > 0;
   };
-  bool operator>(random_access_iterator<T> const &rhs) { return rhs <
-  *this;
-  }; bool operator<=(random_access_iterator<T> const &rhs) {
+  bool operator>(random_access_iterator<T> const &rhs) { return rhs < *this; };
+  bool operator<=(random_access_iterator<T> const &rhs) {
     return !(*this < rhs);
   };
   bool operator>=(random_access_iterator<T> const &rhs) {
     return !(*this > rhs);
   };
-  reference operator[](difference_type sz) const { return this->_ptr[sz];
-  };
+  reference operator[](difference_type sz) const { return this->_ptr[sz]; };
 };
 template <class T>
 class const_random_access_iterator
@@ -588,80 +606,80 @@ public:
   typedef typename It::reference reference;
   typedef typename It::iterator_category iterator_category;
 
-  const_random_access_iterator<T>() : bidirectional_iterator<T>(), It()
-  {}
+    const_random_access_iterator<T>() : bidirectional_iterator<T>(), It()
+    {}
 
-  const_random_access_iterator<T> &operator++() {
-    It::operator++();
-    return *this;
-  }
-  const_random_access_iterator<T> operator++(int) {
-    const_random_access_iterator<T> tmp(*this);
-    ++*this;
-    return tmp;
-  }
-  virtual bool operator==(const_random_access_iterator<T> const &rhs) {
-    return (this->_ptr == rhs._ptr);
-  }
-  virtual bool operator!=(const_random_access_iterator<T> const &rhs) {
-    return !(*this == rhs);
-  }
-  virtual value_type operator*() const { return It::operator*(); }
-  virtual pointer operator->() const { return bIt::operator->(); }
-  const_random_access_iterator<T> &operator--() {
-    this->_ptr--;
-    return *this;
-  };
-  const_random_access_iterator<T> operator--(int) {
-    const_random_access_iterator<T> tmp(*this);
-    --*this;
-    return tmp;
-  };
-  const_random_access_iterator<T> &operator+=(difference_type sz) {
-    while (sz--)
+    const_random_access_iterator<T> &operator++() {
+      bIt::operator++();
+      return *this;
+    }
+    const_random_access_iterator<T> operator++(int) {
+      const_random_access_iterator<T> tmp(*this);
       ++*this;
-    return *this;
-  };
-  const_random_access_iterator<T> operator+(difference_type sz) const {
-    const_random_access_iterator<T> tmp(*this);
-    tmp += sz;
-    return tmp;
-  };
-  friend const_random_access_iterator<T>
-  operator+(difference_type sz, const_random_access_iterator<T> const
-  &src) {
-    return (src + sz);
-  };
-  const_random_access_iterator<T> &operator-=(difference_type sz) {
-    while (sz--)
+      return tmp;
+    }
+    virtual bool operator==(const_random_access_iterator<T> const &rhs) {
+      return (this->_ptr == rhs._ptr);
+    }
+    virtual bool operator!=(const_random_access_iterator<T> const &rhs) {
+      return !(*this == rhs);
+    }
+    virtual value_type operator*() const { return bIt::operator*(); }
+    virtual pointer operator->() const { return bIt::operator->(); }
+    const_random_access_iterator<T> &operator--() {
+      this->_ptr--;
+      return *this;
+    };
+    const_random_access_iterator<T> operator--(int) {
+      const_random_access_iterator<T> tmp(*this);
       --*this;
-    return *this;
-  };
-  const_random_access_iterator<T> operator-(difference_type sz) const {
-    const_random_access_iterator<T> tmp(*this);
-    tmp -= sz;
-    return tmp;
-  };
-  difference_type operator-(const_random_access_iterator<T> src) const {
-    difference_type n = 0;
-    while (*this != src--)
-      n++;
-    return n;
-  };
-  bool operator<(const_random_access_iterator<T> const &rhs) {
-    return rhs - *this > 0;
-  };
-  bool operator>(const_random_access_iterator<T> const &rhs) {
-    return rhs < *this;
-  };
-  bool operator<=(const_random_access_iterator<T> const &rhs) {
-    return !(*this < rhs);
-  };
-  bool operator>=(const_random_access_iterator<T> const &rhs) {
-    return !(*this > rhs);
-  };
-  reference operator[](difference_type sz) const { return this->_ptr[sz];
-  };
+      return tmp;
+    };
+    const_random_access_iterator<T> &operator+=(difference_type sz) {
+      while (sz--)
+        ++*this;
+      return *this;
+    };
+    const_random_access_iterator<T> operator+(difference_type sz) const {
+      const_random_access_iterator<T> tmp(*this);
+      tmp += sz;
+      return tmp;
+    };
+    friend const_random_access_iterator<T>
+    operator+(difference_type sz, const_random_access_iterator<T> const
+    &src) {
+      return (src + sz);
+    };
+    const_random_access_iterator<T> &operator-=(difference_type sz) {
+      while (sz--)
+        --*this;
+      return *this;
+    };
+    const_random_access_iterator<T> operator-(difference_type sz) const {
+      const_random_access_iterator<T> tmp(*this);
+      tmp -= sz;
+      return tmp;
+    };
+    difference_type operator-(const_random_access_iterator<T> src) const {
+      difference_type n = 0;
+      while (*this != src--)
+        n++;
+      return n;
+    };
+    bool operator<(const_random_access_iterator<T> const &rhs) {
+      return rhs - *this > 0;
+    };
+    bool operator>(const_random_access_iterator<T> const &rhs) {
+      return rhs < *this;
+    };
+    bool operator<=(const_random_access_iterator<T> const &rhs) {
+      return !(*this < rhs);
+    };
+    bool operator>=(const_random_access_iterator<T> const &rhs) {
+      return !(*this > rhs);
+    };
+    reference operator[](difference_type sz) const { return this->_ptr[sz];
+    };
 };
 
 // @paragraph it_fns Iterator Functions
@@ -831,7 +849,7 @@ typename iterator_traits<Iter>::difference_type distance(Iter first,
   return _distance(first, last, __iterator_category(first));
 }
 
-// Reverse(Const) Iterator 
+// Reverse(Const) Iterator
 template <class Iterator>
 class reverse_iterator
     : iterator<typename iterator_traits<Iterator>::iterator_category,

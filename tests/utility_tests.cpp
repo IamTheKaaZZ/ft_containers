@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   utility_tests.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
+/*   By: bcosters <bcosters@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/14 17:07:51 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/23 11:31:58 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/04/25 12:40:17 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef _IS_TEST
 #include <algorithm>
-#include <bits/stdc++.h>
+// #include <bits/stdc++.h>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -23,7 +23,7 @@ namespace ft = std;
 #include "../include/Iterators.hpp"
 #include "../include/Map.hpp"
 #include "../include/Stack.hpp"
-#include "../include/Vector.hpp"
+// #include "../include/Vector.hpp"
 #include "../include/utility.hpp"
 #endif // _IS_TEST
 #include <iostream>
