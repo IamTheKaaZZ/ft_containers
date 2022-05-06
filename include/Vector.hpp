@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Vector.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bcosters <bcosters@student.42.fr>          +#+  +:+       +#+        */
+/*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/04/25 17:55:03 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/05/06 14:15:04 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -355,26 +355,6 @@ protected:
     {
       if (&__x != this)
         {
-          _GLIBCXX_ASAN_ANNOTATE_REINIT;
-#if __cplusplus >= 201103L
-          if (_Alloc_traits::_S_propagate_on_copy_assign())
-            {
-              if (!_Alloc_traits::_S_always_equal()
-                  && _M_get_Tp_allocator() != __x._M_get_Tp_allocator())
-                {
-                  // replacement allocator cannot free existing storage
-                  this->clear();
-                  _M_deallocate(this->_M_impl._M_start,
-                                this->_M_impl._M_end_of_storage
-                                - this->_M_impl._M_start);
-                  this->_M_impl._M_start = nullptr;
-                  this->_M_impl._M_finish = nullptr;
-                  this->_M_impl._M_end_of_storage = nullptr;
-                }
-              std::__alloc_on_copy(_M_get_Tp_allocator(),
-                                   __x._M_get_Tp_allocator());
-            }
-#endif
           const size_type __xlen = __x.size();
           if (__xlen > capacity())
             {
@@ -420,11 +400,9 @@ protected:
         {
           std::fill(begin(), end(), __val);
           const size_type __add = __n - size();
-          _GLIBCXX_ASAN_ANNOTATE_GROW(__add);
           this->_M_impl._M_finish =
             std::__uninitialized_fill_n_a(this->_M_impl._M_finish,
                                           __add, __val, _M_get_Tp_allocator());
-          _GLIBCXX_ASAN_ANNOTATE_GREW(__add);
         }
       else
         _M_erase_at_end(std::fill_n(this->_M_impl._M_start, __n, __val));
@@ -480,101 +458,24 @@ protected:
               std::__uninitialized_copy_a(__mid, __last,
                                           this->_M_impl._M_finish,
                                           _M_get_Tp_allocator());
-            _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
           }
       }
-#if __cplusplus >= 201103L
-  template<typename _Tp, typename _Alloc>
-    auto
-    vector<_Tp, _Alloc>::
-    _M_insert_rval(const_iterator __position, value_type&& __v) -> iterator
-    {
-      const auto __n = __position - cbegin();
-      if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
-        if (__position == cend())
-          {
-            _GLIBCXX_ASAN_ANNOTATE_GROW(1);
-            _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
-                                     std::move(__v));
-            ++this->_M_impl._M_finish;
-            _GLIBCXX_ASAN_ANNOTATE_GREW(1);
-          }
-        else
-          _M_insert_aux(begin() + __n, std::move(__v));
-      else
-        _M_realloc_insert(begin() + __n, std::move(__v));
-      return iterator(this->_M_impl._M_start + __n);
-    }
-  template<typename _Tp, typename _Alloc>
-    template<typename... _Args>
-      auto
-      vector<_Tp, _Alloc>::
-      _M_emplace_aux(const_iterator __position, _Args&&... __args)
-      -> iterator
-      {
-        const auto __n = __position - cbegin();
-        if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
-          if (__position == cend())
-            {
-              _GLIBCXX_ASAN_ANNOTATE_GROW(1);
-              _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
-                                       std::forward<_Args>(__args)...);
-              ++this->_M_impl._M_finish;
-              _GLIBCXX_ASAN_ANNOTATE_GREW(1);
-            }
-          else
-            {
-              // We need to construct a temporary because something in __args...
-              // could alias one of the elements of the container and so we
-              // need to use it before _M_insert_aux moves elements around.
-              _Temporary_value __tmp(this, std::forward<_Args>(__args)...);
-              _M_insert_aux(begin() + __n, std::move(__tmp._M_val()));
-            }
-        else
-          _M_realloc_insert(begin() + __n, std::forward<_Args>(__args)...);
-        return iterator(this->_M_impl._M_start + __n);
-      }
-  template<typename _Tp, typename _Alloc>
-    template<typename _Arg>
-      void
-      vector<_Tp, _Alloc>::
-      _M_insert_aux(iterator __position, _Arg&& __arg)
-#else
   template<typename _Tp, typename _Alloc>
     void
     vector<_Tp, _Alloc>::
     _M_insert_aux(iterator __position, const _Tp& __x)
-#endif
     {
-      _GLIBCXX_ASAN_ANNOTATE_GROW(1);
       _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
                                _GLIBCXX_MOVE(*(this->_M_impl._M_finish - 1)));
       ++this->_M_impl._M_finish;
-      _GLIBCXX_ASAN_ANNOTATE_GREW(1);
-#if __cplusplus < 201103L
       _Tp __x_copy = __x;
-#endif
-      _GLIBCXX_MOVE_BACKWARD3(__position.base(),
-                              this->_M_impl._M_finish - 2,
-                              this->_M_impl._M_finish - 1);
-#if __cplusplus < 201103L
       *__position = __x_copy;
-#else
       *__position = std::forward<_Arg>(__arg);
-#endif
     }
-#if __cplusplus >= 201103L
-  template<typename _Tp, typename _Alloc>
-    template<typename... _Args>
-      void
-      vector<_Tp, _Alloc>::
-      _M_realloc_insert(iterator __position, _Args&&... __args)
-#else
   template<typename _Tp, typename _Alloc>
     void
     vector<_Tp, _Alloc>::
     _M_realloc_insert(iterator __position, const _Tp& __x)
-#endif
     {
       const size_type __len =
         _M_check_len(size_type(1), "vector::_M_realloc_insert");
@@ -592,11 +493,7 @@ protected:
           // [res.on.arguments]).
           _Alloc_traits::construct(this->_M_impl,
                                    __new_start + __elems_before,
-#if __cplusplus >= 201103L
-                                   std::forward<_Args>(__args)...);
-#else
                                    __x);
-#endif
           __new_finish = pointer();
           __new_finish
             = std::__uninitialized_move_if_noexcept_a
@@ -636,42 +533,30 @@ protected:
           if (size_type(this->_M_impl._M_end_of_storage
                         - this->_M_impl._M_finish) >= __n)
             {
-#if __cplusplus < 201103L
               value_type __x_copy = __x;
-#else
-              _Temporary_value __tmp(this, __x);
-              value_type& __x_copy = __tmp._M_val();
-#endif
               const size_type __elems_after = end() - __position;
               pointer __old_finish(this->_M_impl._M_finish);
               if (__elems_after > __n)
                 {
-                  _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
                   std::__uninitialized_move_a(this->_M_impl._M_finish - __n,
                                               this->_M_impl._M_finish,
                                               this->_M_impl._M_finish,
                                               _M_get_Tp_allocator());
                   this->_M_impl._M_finish += __n;
-                  _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
-                  _GLIBCXX_MOVE_BACKWARD3(__position.base(),
-                                          __old_finish - __n, __old_finish);
                   std::fill(__position.base(), __position.base() + __n,
                             __x_copy);
                 }
               else
                 {
-                  _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
                   this->_M_impl._M_finish =
                     std::__uninitialized_fill_n_a(this->_M_impl._M_finish,
                                                   __n - __elems_after,
                                                   __x_copy,
                                                   _M_get_Tp_allocator());
-                  _GLIBCXX_ASAN_ANNOTATE_GREW(__n - __elems_after);
                   std::__uninitialized_move_a(__position.base(), __old_finish,
                                               this->_M_impl._M_finish,
                                               _M_get_Tp_allocator());
                   this->_M_impl._M_finish += __elems_after;
-                  _GLIBCXX_ASAN_ANNOTATE_GREW(__elems_after);
                   std::fill(__position.base(), __old_finish, __x_copy);
                 }
             }
@@ -711,7 +596,6 @@ protected:
                   _M_deallocate(__new_start, __len);
                   __throw_exception_again;
                 }
-              _GLIBCXX_ASAN_ANNOTATE_REINIT;
               std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
                             _M_get_Tp_allocator());
               _M_deallocate(this->_M_impl._M_start,
@@ -723,70 +607,6 @@ protected:
             }
         }
     }
-#if __cplusplus >= 201103L
-  template<typename _Tp, typename _Alloc>
-    void
-    vector<_Tp, _Alloc>::
-    _M_default_append(size_type __n)
-    {
-      if (__n != 0)
-        {
-          if (size_type(this->_M_impl._M_end_of_storage
-                        - this->_M_impl._M_finish) >= __n)
-            {
-              _GLIBCXX_ASAN_ANNOTATE_GROW(__n);
-              this->_M_impl._M_finish =
-                std::__uninitialized_default_n_a(this->_M_impl._M_finish,
-                                                 __n, _M_get_Tp_allocator());
-              _GLIBCXX_ASAN_ANNOTATE_GREW(__n);
-            }
-          else
-            {
-              const size_type __len =
-                _M_check_len(__n, "vector::_M_default_append");
-              const size_type __old_size = this->size();
-              pointer __new_start(this->_M_allocate(__len));
-              pointer __new_finish(__new_start);
-              __try
-                {
-                  __new_finish
-                    = std::__uninitialized_move_if_noexcept_a
-                    (this->_M_impl._M_start, this->_M_impl._M_finish,
-                     __new_start, _M_get_Tp_allocator());
-                  __new_finish =
-                    std::__uninitialized_default_n_a(__new_finish, __n,
-                                                     _M_get_Tp_allocator());
-                }
-              __catch(...)
-                {
-                  std::_Destroy(__new_start, __new_finish,
-                                _M_get_Tp_allocator());
-                  _M_deallocate(__new_start, __len);
-                  __throw_exception_again;
-                }
-              _GLIBCXX_ASAN_ANNOTATE_REINIT;
-              std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
-                            _M_get_Tp_allocator());
-              _M_deallocate(this->_M_impl._M_start,
-                            this->_M_impl._M_end_of_storage
-                            - this->_M_impl._M_start);
-              this->_M_impl._M_start = __new_start;
-              this->_M_impl._M_finish = __new_finish;
-              this->_M_impl._M_end_of_storage = __new_start + __len;
-            }
-        }
-    }
-  template<typename _Tp, typename _Alloc>
-    bool
-    vector<_Tp, _Alloc>::
-    _M_shrink_to_fit()
-    {
-      if (capacity() == size())
-        return false;
-      _GLIBCXX_ASAN_ANNOTATE_REINIT;
-      return std::__shrink_to_fit_aux<vector>::_S_do_it(*this);
-    }
-#endif
   template<typename _Tp, typename _Alloc>
     template<typename _InputIterator>
       void
@@ -894,147 +714,6 @@ protected:
               }
           }
       }
-  // vector<bool>
-  template<typename _Alloc>
-    void
-    vector<bool, _Alloc>::
-    _M_reallocate(size_type __n)
-    {
-      _Bit_pointer __q = this->_M_allocate(__n);
-      iterator __start(std::__addressof(*__q), 0);
-      iterator __finish(_M_copy_aligned(begin(), end(), __start));
-      this->_M_deallocate();
-      this->_M_impl._M_start = __start;
-      this->_M_impl._M_finish = __finish;
-      this->_M_impl._M_end_of_storage = __q + _S_nword(__n);
-    }
-  template<typename _Alloc>
-    void
-    vector<bool, _Alloc>::
-    _M_fill_insert(iterator __position, size_type __n, bool __x)
-    {
-      if (__n == 0)
-        return;
-      if (capacity() - size() >= __n)
-        {
-          std::copy_backward(__position, end(),
-                             this->_M_impl._M_finish + difference_type(__n));
-          std::fill(__position, __position + difference_type(__n), __x);
-          this->_M_impl._M_finish += difference_type(__n);
-        }
-      else
-        {
-          const size_type __len = 
-            _M_check_len(__n, "vector<bool>::_M_fill_insert");
-          _Bit_pointer __q = this->_M_allocate(__len);
-          iterator __start(std::__addressof(*__q), 0);
-          iterator __i = _M_copy_aligned(begin(), __position, __start);
-          std::fill(__i, __i + difference_type(__n), __x);
-          iterator __finish = std::copy(__position, end(),
-                                        __i + difference_type(__n));
-          this->_M_deallocate();
-          this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
-          this->_M_impl._M_start = __start;
-          this->_M_impl._M_finish = __finish;
-        }
-    }
-  template<typename _Alloc>
-    template<typename _ForwardIterator>
-      void
-      vector<bool, _Alloc>::
-      _M_insert_range(iterator __position, _ForwardIterator __first, 
-                      _ForwardIterator __last, std::forward_iterator_tag)
-      {
-        if (__first != __last)
-          {
-            size_type __n = std::distance(__first, __last);
-            if (capacity() - size() >= __n)
-              {
-                std::copy_backward(__position, end(),
-                                   this->_M_impl._M_finish
-                                   + difference_type(__n));
-                std::copy(__first, __last, __position);
-                this->_M_impl._M_finish += difference_type(__n);
-              }
-            else
-              {
-                const size_type __len =
-                  _M_check_len(__n, "vector<bool>::_M_insert_range");
-                _Bit_pointer __q = this->_M_allocate(__len);
-                iterator __start(std::__addressof(*__q), 0);
-                iterator __i = _M_copy_aligned(begin(), __position, __start);
-                __i = std::copy(__first, __last, __i);
-                iterator __finish = std::copy(__position, end(), __i);
-                this->_M_deallocate();
-                this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
-                this->_M_impl._M_start = __start;
-                this->_M_impl._M_finish = __finish;
-              }
-          }
-      }
-  template<typename _Alloc>
-    void
-    vector<bool, _Alloc>::
-    _M_insert_aux(iterator __position, bool __x)
-    {
-      if (this->_M_impl._M_finish._M_p != this->_M_impl._M_end_addr())
-        {
-          std::copy_backward(__position, this->_M_impl._M_finish, 
-                             this->_M_impl._M_finish + 1);
-          *__position = __x;
-          ++this->_M_impl._M_finish;
-        }
-      else
-        {
-          const size_type __len =
-            _M_check_len(size_type(1), "vector<bool>::_M_insert_aux");
-          _Bit_pointer __q = this->_M_allocate(__len);
-          iterator __start(std::__addressof(*__q), 0);
-          iterator __i = _M_copy_aligned(begin(), __position, __start);
-          *__i++ = __x;
-          iterator __finish = std::copy(__position, end(), __i);
-          this->_M_deallocate();
-          this->_M_impl._M_end_of_storage = __q + _S_nword(__len);
-          this->_M_impl._M_start = __start;
-          this->_M_impl._M_finish = __finish;
-        }
-    }
-  template<typename _Alloc>
-    typename vector<bool, _Alloc>::iterator
-    vector<bool, _Alloc>::
-    _M_erase(iterator __position)
-    {
-      if (__position + 1 != end())
-        std::copy(__position + 1, end(), __position);
-      --this->_M_impl._M_finish;
-      return __position;
-    }
-  template<typename _Alloc>
-    typename vector<bool, _Alloc>::iterator
-    vector<bool, _Alloc>::
-    _M_erase(iterator __first, iterator __last)
-    {
-      if (__first != __last)
-        _M_erase_at_end(std::copy(__last, end(), __first));
-      return __first;
-    }
-#if __cplusplus >= 201103L
-  template<typename _Alloc>
-    bool
-    vector<bool, _Alloc>::
-    _M_shrink_to_fit()
-    {
-      if (capacity() - size() < int(_S_word_bit))
-        return false;
-      __try
-        {
-          _M_reallocate(size());
-          return true;
-        }
-      __catch(...)
-        { return false; }
-    }
-#endif
 
 private:
   size_type _size;
