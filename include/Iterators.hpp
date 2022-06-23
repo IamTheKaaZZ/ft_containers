@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Iterators.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: bcosters <bcosters@student.42.fr>          +#+  +:+       +#+        */
+/*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/04/25 13:00:43 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/06/23 17:31:06 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -598,8 +598,8 @@ class const_random_access_iterator
       virtual public const_iterator<random_access_iterator_tag, T> {
 
 public:
-  typedef iterator<random_access_iterator_tag, T> It;
-  typedef bidirectional_iterator<T> bIt;
+  typedef const_iterator<random_access_iterator_tag, T> It;
+  typedef const_bidirectional_iterator<T> bIt;
   typedef typename It::value_type value_type;
   typedef typename It::distance difference_type;
   typedef typename It::pointer pointer;
