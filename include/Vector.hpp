@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/06/23 18:12:23 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/06/24 15:54:02 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <cstddef>
 #include <exception>
 #include <memory>
+#include <stdexcept>
 #define assertm(exp, msg) assert(((void)msg, exp))
 
 namespace ft {
@@ -75,9 +76,9 @@ namespace ft {
 
 // protected:
 //   void createStorage(size_t n) {
-//     this->implV.start = this->allocate(n);
-//     this->implV.finish = this->implV.start;
-//     this->implV.endOfStorage = this->implV.start + n;
+//     _start = this->allocate(n);
+//     _start + size() = _start;
+//     this->implV.endOfStorage = _start + n;
 //   }
 // };
 
@@ -158,31 +159,60 @@ public:
   vector(InputIt first, InputIt last, const allocator_type &alloc = Allocator())
       : _alloc(alloc) {
     // Check whether it's an integral type.  If so, it's not an iterator.
-    // Gets caught by integer fill constructor.
+    // Gets caught by integer fill constructor if it's not an iterator.
     typedef typename ft::is_integral<InputIt>::type Integral;
     initializeDispatch(first, last, Integral());
   }
 
+  ///
+  /// @brief Destroy the vector object
+  /// First destroys all objects contained, then frees the memory.
+  ///
   ~vector() {
-    for (pointer tmp = this->implV.start; tmp != this->implV.finish; tmp++) {
-      AllocTraits::destroy(get_allocator(), tmp);
-    }
+    destroyAll();
+    _alloc.deallocate(_start, _capacity);
   }
-  vector &operator=(vector const &rhs);
-  void assign(size_type n, value_type const &val) { fillAssign(n, val); }
-  template <typename InputIt> void assign(InputIt first, InputIt last) {
-    // Check whether it's an integral type.  If so, it's not an iterator.
-    typedef typename ft::is_integral<InputIt>::type Integral;
-    assignDispatch(first, last, Integral());
-  }
-  // get_allocator
-  using Base::get_allocator;
 
-  // iterators
-  iterator begin() { return iterator(this->implV.start); }
-  const_iterator begin() const { return const_iterator(this->implV.start); }
-  iterator end() { return iterator(this->implV.finish); }
-  const_iterator end() const { return const_iterator(this->implV.finish); }
+  ///
+  /// @brief Copy Assignment operator
+  /// if !=
+  ///   if the other's size > current capacity
+  ///       -> Allocate and copy a new pointer
+  ///       -> destroy + deallocate current vector
+  ///       -> _start is the new pointer
+  ///   if current size >= other's size
+  ///       -> destroy all current stored objs
+  ///   else
+  ///       -> Copy construct other into current
+  /// 
+  /// @param other 
+  /// @return vector& 
+  ///
+  vector& operator=(const vector& other) {
+    if (&other != this) {
+      const size_type otherSize = other.size();
+      if (otherSize > _capacity) {
+        pointer temp = allocateAndCopy(otherSize, other.begin(), other.end());
+        destroyAll();
+        _alloc.deallocate(_start, _capacity);
+        _start = temp;
+        _size = otherSize;
+        _capacity = otherSize;
+      } else if (size() >= otherSize) {
+        destroyAll();
+      } else {
+        copyConstruct(_start, other.begin(), other.end());
+      }
+      _size = otherSize;
+    }
+    return *this;
+  }
+
+  // Iterators
+  iterator begin() { return iterator(_start); }
+  const_iterator begin() const { return const_iterator(_start); }
+  iterator end() { return iterator(_start + size()); }
+  const_iterator end() const { return const_iterator(_start + size()); }
   reverse_iterator rbegin() { return reverse_iterator(end()); }
   const_reverse_iterator rbegin() const {
     return const_reverse_iterator(end());
@@ -191,25 +221,103 @@ public:
   const_reverse_iterator rend() const {
     return const_reverse_iterator(begin());
   }
+
+  // Member Functions
+  void assign(size_type n, value_type const &val) { fillAssign(n, val); }
+
+  template <typename InputIt> void assign(InputIt first, InputIt last) {
+    // Check whether it's an integral type.  If so, it's not an iterator.
+    typedef typename ft::is_integral<InputIt>::type Integral;
+    assignDispatch(first, last, Integral());
+  }
+
+  ///
+  /// @brief Returns the current size of the vector.
+  /// 
+  /// @return size_type 
+  ///
   size_type size() const {
-    return size_type(this->implV.finish - this->implV.start);
+    return size_type(_size);
   }
-  size_type max_size() const { return _S_max_size(getTAllocator()); }
-  void resize(size_type newSize, value_type val = value_type()) {
-    if (newSize > size())
-      fillInsert(end(), newSize - size(), val);
+
+  ///
+  /// @brief Returns the maximum size available to allocate.
+  /// 
+  /// @return size_type 
+  ///
+  size_type max_size() const { return _alloc.max_size(); }
+
+  ///
+  /// @brief Resize the vector
+  /// 
+  /// @param newSize 
+  /// @param val 
+  ///
+  void resize(size_type newSize, const value_type& val = value_type()) {
+    if (newSize > size()) {
+        if (newSize > _capacity) {
+            (newSize / 2 < _size) ? reserve(_size * 2) : reserve(newSize);
+        }
+    }
     else if (newSize < size())
-      eraseAtEnd(this->implV.start + newSize);
+      eraseAtEnd(_start + newSize);
+    for (size_type i = _size; i < newSize; i++) {
+        copyConstruct(_start, val, i);
+    }
   }
+
+  ///
+  /// @brief Returns the current capacity of the vector.
+  /// 
+  /// @return size_type 
+  ///
   size_type capacity() const {
-    return size_type(this->implV.endOfStorage - this->implV.start);
+    return size_type(_capacity);
   }
+
+  ///
+  /// @brief Check if the vector is empty.
+  /// 
+  /// @return true 
+  /// @return false 
+  ///
   bool empty() const { return begin() == end(); }
-  void reserve(size_type n);
-  reference operator[](size_type n) { return *(this->implV.start + n); }
-  const_reference operator[](size_type n) const {
-    return *(this->implV.start + n);
+
+  ///
+  /// @brief Increase the capacity to n.
+  /// 
+  /// @param n 
+  ///
+  void reserve(size_type n) {
+    if (n <= _capacity) {
+        return ;
+    } else if (n > max_size()) {
+        throw std::length_error("vector::reserve");
+    }
+    pointer temp = allocateAndCopy(n, begin(), end());
+    destroyAll();
+    _alloc.deallocate(_start, _capacity);
+    _start = temp;
+    _capacity = n;
   }
+
+  ///
+  /// @brief Return the element at index n.
+  /// 
+  /// @param n 
+  /// @return reference 
+  ///
+  reference operator[](size_type n) { return *(_start + n); }
+  const_reference operator[](size_type n) const {
+    return *(_start + n);
+  }
+
+  ///
+  /// @brief Return the element at index n.
+  /// 
+  /// @param n 
+  /// @return reference 
+  ///
   reference at(size_type n) {
     rangeCheck(n);
     return (*this)[n];
@@ -218,6 +326,12 @@ public:
     rangeCheck(n);
     return (*this)[n];
   }
+
+  ///
+  /// @brief Return the first element.
+  /// 
+  /// @return reference 
+  ///
   reference front() {
     requireNonEmpty();
     return *begin();
@@ -226,6 +340,12 @@ public:
     requireNonEmpty();
     return *begin();
   }
+
+  ///
+  /// @brief Return the last element.
+  /// 
+  /// @return reference 
+  ///
   reference back() {
     requireNonEmpty();
     return *(end() - 1);
@@ -234,39 +354,78 @@ public:
     requireNonEmpty();
     return *(end() - 1);
   }
-  T *data() { return dataPtr(this->implV.start); }
-  const T *data() const { return dataPtr(this->implV.start); }
+
+  ///
+  /// @brief Return the data PTR.
+  /// 
+  /// @return T* 
+  ///
+  T *data() { return dataPtr(_start); }
+  const T *data() const { return dataPtr(_start); }
+
+  ///
+  /// @brief Add the value at the end of the vector.
+  /// 
+  /// @param val 
+  ///
   void push_back(const value_type &val) {
-    if (this->implV.finish != this->implV.endOfStorage) {
-      allocator_type::construct(this->implV.finish, val);
-      ++this->implV.finish;
-    } else
-      reallocInsert(end(), val);
-  }
+    if (empty()) {
+        reserve(1);
+     } else if (_size == _capacity) {
+      (_size * 2 < max_size()) ? reserve(_size * 2) : reserve(max_size());
+     }
+     copyConstruct(_start, val, _size++);
+  }    
+
+  ///
+  /// @brief Remove the last element.
+  /// 
+  ///
   void pop_back() {
     requireNonEmpty();
-    --this->implV.finish;
-    AllocTraits::destroy(this->implV, this->implV.finish);
+    destroyObj(_start, --_size);
   }
-  iterator insert(iterator position, const value_type &val);
+
   void insert(iterator position, size_type n, const value_type &val) {
     fillInsert(position, n, val);
   }
+
   template <typename InputIt>
   void insert(iterator position, InputIt first, InputIt last) {
     // Check whether it's an integral type.  If so, it's not an iterator.
     typedef typename ft::is_integral<InputIt>::type Integral;
     insertDispatch(position, first, last, Integral());
   }
+
   iterator erase(iterator position) { return eraseV(position); }
   iterator erase(iterator first, iterator last) { return eraseV(first, last); }
   void swap(vector &other) {
     this->implV.swapData(other.implV);
     AllocTraits::on_swap(getTAllocator(), other.getTAllocator());
   }
-  void clear() { eraseAtEnd(this->implV.start); }
+  void clear() { eraseAtEnd(_start); }
 
 protected:
+
+  ///
+  /// @brief Destroys the object at the pointer index, deos not free memory.
+  /// 
+  /// @param ptr 
+  /// @param i 
+  ///
+  void destroyObj(pointer ptr, size_type i) {
+    _alloc.destroy(ptr + i);
+  }
+
+  ///
+  /// @brief Destroys all objects within the vector, does not free memory.
+  /// 
+  ///
+  void destroyAll() {
+    for (size_type i = 0; i < _size; i++) {
+        _alloc.destroy(_start + i);
+    }
+  }
 
   void rangeCheck(size_type n) const {
     static_assert(n >= this->size(), "Invalid Range");
@@ -274,40 +433,110 @@ protected:
 
   void requireNonEmpty() { static_assert(!empty(), "Vector is empty"); }
 
+  ///
+  /// @brief Copy Constructs a range in the dest pointer.
+  /// 
+  /// @param dest 
+  /// @param start 
+  /// @param end 
+  ///
+  void copyConstruct(pointer dest, iterator start, iterator end) {
+    while (start != end) {
+        _alloc.construct(dest++, *start++);
+    }
+  }
+
+  ///
+  /// @brief Copy Construct a specific index in the dest pointer
+  /// 
+  /// @param dest 
+  /// @param value 
+  /// @param i 
+  ///
+  void copyConstruct(pointer dest, const value_type& value, size_type i = 0) {
+    _alloc.construct(dest + i, value);
+  }
+
+  ///
+  /// @brief Allocates and Copy constructs a range
+  /// 
+  /// @tparam ForwardIterator 
+  /// @param n 
+  /// @param first 
+  /// @param last 
+  /// @return pointer Allocated and sopy constructed pointer
+  ///
   template <typename ForwardIterator>
   pointer allocateAndCopy(size_type n, ForwardIterator first,
                           ForwardIterator last) {
-    pointer result = this->allocate(n);
+    pointer result = _alloc.allocate(n);
     try {
-      std::uninitialized_copy(first, last, result);
+      copyConstruct(result, first, last);
       return result;
     } catch (...) {
-      deallocate(result, n);
+      _alloc.deallocate(result, n);
       throw;
     }
   }
 
+  void copyData(const vector &rhs) {
+      _start = rhs._start;
+      _size = rhs._size;
+      _capacity = rhs._capacity;
+    }
+
+  void swapData(vector &rhs) {
+      vector tmp;
+      tmp.copyData(*this);
+      copyData(rhs);
+      rhs.copyData(tmp);
+  }
+
+  ///
+  /// @brief Fill constructor specialization to catch integral calls.
+  /// 
+  /// @tparam Integer 
+  /// @param n 
+  /// @param value 
+  ///
   template <typename Integer>
   void initializeDispatch(Integer n, Integer value, ft::true_type) {
     _start = _alloc.allocate(static_cast<size_type>(n));
     fillInitialize(static_cast<size_type>(n), value);
   }
 
+  ///
+  /// @brief InputIterator specialization to use the Range Constructor.
+  /// 
+  /// @tparam InputIterator 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename InputIterator>
   void initializeDispatch(InputIterator first, InputIterator last,
                           ft::false_type) {
-    typedef typename std::iterator_traits<InputIterator>::iterator_category
-        IterCategory;
-    rangeInitialize(first, last, IterCategory());
+    rangeInitialize(first, last);
   }
 
+  ///
+  /// @brief Initialize the vector with a given range.
+  /// 
+  /// @tparam InputIterator 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename InputIterator>
-  void rangeInitialize(InputIterator first, InputIterator last,
-                       ft::input_iterator_tag) {
+  void rangeInitialize(InputIterator first, InputIterator last) {
     for (; first != last; ++first)
       push_back(*first);
   }
 
+  ///
+  /// @brief Fill an n amount with the value given.
+  /// 
+  /// @param n 
+  /// @param value 
+  ///
   void fillInitialize(size_type n, const value_type &value) {
     for (size_type i = 0; i < n; i++) {
       _alloc.construct(_start + i, value);
@@ -318,35 +547,18 @@ protected:
   void assignDispatch(Integer n, Integer val, ft::true_type) {
     fillAssign(n, val);
   }
-  template <typename InputIterator>
-  void assignDispatch(InputIterator first, InputIterator last, ft::false_type) {
-    assignAux(first, last, ft::__iterator_category(first));
-  }
-  template <typename InputIterator>
-  void assignAux(InputIterator first, InputIterator last,
-                 ft::input_iterator_tag);
-  template <typename ForwardIterator>
-  void assignAux(ForwardIterator first, ForwardIterator last,
-                 ft::forward_iterator_tag);
-  void fillAssign(size_type n, const value_type &val);
+
   template <typename Integer>
   void insertDispatch(iterator pos, Integer n, Integer val, ft::true_type) {
     fillInsert(pos, n, val);
   }
+
   template <typename InputIterator>
   void insertDispatch(iterator pos, InputIterator first, InputIterator last,
                       ft::false_type) {
     rangeInsert(pos, first, last, ft::__iterator_category(first));
   }
-  template <typename InputIterator>
-  void rangeInsert(iterator pos, InputIterator first, InputIterator last,
-                   ft::input_iterator_tag);
-  template <typename ForwardIterator>
-  void rangeInsert(iterator pos, ForwardIterator first, ForwardIterator last,
-                   ft::forward_iterator_tag);
-  void fillInsert(iterator pos, size_type n, const value_type &x);
-  void insertAux(iterator position, const value_type &x);
-  void reallocInsert(iterator position, const value_type &x);
+
   size_type checkLen(size_type n, const char *s) const {
     if (max_size() - size() < n)
       throw std::length_error(s);
@@ -354,26 +566,12 @@ protected:
     return (len < size() || len > max_size()) ? max_size() : len;
   }
   void eraseAtEnd(pointer pos) {
-    if (size_type n = this->implV.finish - pos) {
-      AllocTraits::destroy(getTAllocator(), pos);
-      this->implV.finish = pos;
+    if (size_type n = _start + size() - pos) {
+      _alloc.destroy(pos);
+      _start + size() = pos;
     }
   }
-  iterator eraseV(iterator position) {
-    if (position + 1 != end())
-      _GLIBCXX_MOVE3(position + 1, end(), position);
-    --this->implV.finish;
-    AllocTraits::destroy(this->_M_impl, this->_M_impl._M_finish);
-    return position;
-  }
-  iterator eraseV(iterator first, iterator last) {
-    if (first != last) {
-      if (last != end())
-        _GLIBCXX_MOVE3(last, end(), first);
-      eraseAtEnd(first.base() + (end() - last));
-    }
-    return first;
-  }
+
   template <typename U> U *dataPtr(U *ptr) const { return ptr; }
   template <typename U> U *dataPtr(U *ptr) { return ptr; }
   template <typename Ptr> value_type *dataPtr(Ptr ptr) {
@@ -382,70 +580,36 @@ protected:
   template <typename Ptr> const value_type *dataPtr(Ptr ptr) const {
     return empty() ? (const value_type *)0 : ptr.operator->();
   }
-  template <typename _Tp, typename _Alloc>
-  vector<_Tp, _Alloc> &
-  vector<_Tp, _Alloc>::operator=(const vector<_Tp, _Alloc> &__x) {
-    if (&__x != this) {
-      const size_type __xlen = __x.size();
-      if (__xlen > capacity()) {
-        pointer __tmp = _M_allocate_and_copy(__xlen, __x.begin(), __x.end());
-        std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
-                      _M_get_Tp_allocator());
-        _M_deallocate(this->_M_impl._M_start,
-                      this->_M_impl._M_end_of_storage - this->_M_impl._M_start);
-        this->_M_impl._M_start = __tmp;
-        this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __xlen;
-      } else if (size() >= __xlen) {
-        std::_Destroy(std::copy(__x.begin(), __x.end(), begin()), end(),
-                      _M_get_Tp_allocator());
-      } else {
-        std::copy(__x._M_impl._M_start, __x._M_impl._M_start + size(),
-                  this->_M_impl._M_start);
-        std::__uninitialized_copy_a(
-            __x._M_impl._M_start + size(), __x._M_impl._M_finish,
-            this->_M_impl._M_finish, _M_get_Tp_allocator());
-      }
-      this->_M_impl._M_finish = this->_M_impl._M_start + __xlen;
-    }
-    return *this;
-  }
-  template <typename _Tp, typename _Alloc>
-  void vector<_Tp, _Alloc>::_M_fill_assign(size_t __n,
-                                           const value_type &__val) {
-    if (__n > capacity()) {
-      vector __tmp(__n, __val, _M_get_Tp_allocator());
-      __tmp._M_impl._M_swap_data(this->_M_impl);
-    } else if (__n > size()) {
-      std::fill(begin(), end(), __val);
-      const size_type __add = __n - size();
-      this->_M_impl._M_finish = std::__uninitialized_fill_n_a(
-          this->_M_impl._M_finish, __add, __val, _M_get_Tp_allocator());
+  
+  void fillAssign(size_type n, const value_type & value) {
+    if (n > capacity()) {
+      vector tmp(n, value, _alloc);
+      tmp.swapData(*this);
+    } else if (n > size()) {
+      std::fill(begin(), end(), value);
+      size_type add = n - size();
+      std::fill_n(_start + size(), add, value);
     } else
-      _M_erase_at_end(std::fill_n(this->_M_impl._M_start, __n, __val));
+      eraseAtEnd(std::fill_n(_start, n, value));
   }
-  template <typename _Tp, typename _Alloc>
-  template <typename _InputIterator>
-  void vector<_Tp, _Alloc>::_M_assign_aux(_InputIterator __first,
-                                          _InputIterator __last,
-                                          std::input_iterator_tag) {
-    pointer __cur(this->_M_impl._M_start);
-    for (; __first != __last && __cur != this->_M_impl._M_finish;
-         ++__cur, ++__first)
-      *__cur = *__first;
-    if (__first == __last)
-      _M_erase_at_end(__cur);
+
+  template <typename InputIterator>
+  void assignAux(InputIterator first, InputIterator last, std::input_iterator_tag) {
+    pointer current(_start);
+    for (; first != last && current != _start + size(); ++current, ++first)
+      *current = *first;
+    if (first == last)
+      eraseAtEnd(current);
     else
       _M_range_insert(end(), __first, __last,
                       std::__iterator_category(__first));
   }
-  template <typename _Tp, typename _Alloc>
-  template <typename _ForwardIterator>
-  void vector<_Tp, _Alloc>::_M_assign_aux(_ForwardIterator __first,
-                                          _ForwardIterator __last,
-                                          std::forward_iterator_tag) {
+
+  template <typename ForwardIterator>
+  void assignAux(ForwardIterator first, ForwardIterator last, std::forward_iterator_tag) {
     const size_type __len = std::distance(__first, __last);
     if (__len > capacity()) {
-      pointer __tmp(_M_allocate_and_copy(__len, __first, __last));
+      pointer __tmp(allocateAndCopy(__len, __first, __last));
       _GLIBCXX_ASAN_ANNOTATE_REINIT;
       std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
                     _M_get_Tp_allocator());
