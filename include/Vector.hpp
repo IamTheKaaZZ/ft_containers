@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/06/27 16:38:08 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/06/27 17:29:36 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@
 
 namespace ft {
 
-template <class T, class Allocator = std::allocator<T>> struct vectorBase {
+template <class T, class Allocator = std::allocator<T> > struct vectorBase {
   // Implicit vector data
   typedef T value_type;
   typedef Allocator allocator_type;
@@ -33,7 +33,7 @@ template <class T, class Allocator = std::allocator<T>> struct vectorBase {
   typedef typename allocator_type::size_type size_type;
 
 public:
-  allocator_type getAllocator() const { return alloc; }
+  allocator_type get_allocator() const { return alloc; }
   vectorBase() : alloc(), start(), finish(), endOfStorage() {}
   vectorBase(allocator_type const &alloc)
       : alloc(alloc), start(), finish(), endOfStorage() {}
@@ -163,7 +163,7 @@ private:
   pointer endOfStorage;
 };
 
-template <class T, class Allocator = std::allocator<T>>
+template <class T, class Allocator = std::allocator<T> >
 class vector : protected vectorBase<T, Allocator> {
 
 public:
@@ -186,16 +186,9 @@ public:
   using Base::deallocate;
   using Base::max_size;
   using Base::size;
+  using Base::get_allocator;
 
   /// ---------- Ctors & operators
-
-  ///
-  /// @brief Assert if the allocator type is correct
-  ///
-  ///
-  static_assert(
-      (ft::is_same<typename allocator_type::value_type, value_type>::value),
-      "Allocator::value_type must be same type as value_type");
 
   vector() : Base() {}
 
@@ -227,7 +220,7 @@ public:
   ///
   /// @param other
   ///
-  vector(const vector &other) : Base(other.capacity(), other.getAllocator()) {
+  vector(const vector &other) : Base(other.capacity(), other.get_allocator()) {
     pointer ptr;
     for (size_type i = 0; i < other.size(); i++) {
       ptr = construct(getStartPtr(), i, other[i]);
@@ -505,7 +498,6 @@ protected:
   using Base::copyData;
   using Base::destroy;
   using Base::destroyAll;
-  using Base::getAllocator;
   using Base::getEndOfStoragePtr;
   using Base::getFinishPtr;
   using Base::getStartPtr;
@@ -515,10 +507,11 @@ protected:
   using Base::swapData;
 
   void rangeCheck(size_type n) const {
-    static_assert(n >= this->size(), "Invalid Range");
+    if (n >= this->size())
+        throw std::out_of_range("vector");
   }
 
-  void requireNonEmpty() { static_assert(!empty(), "Vector is empty"); }
+  void requireNonEmpty() { if (!empty()) throw std::length_error("vector is not empty"); }
 
   ///
   /// @brief Fill constructor specialization to catch integral calls.
@@ -630,7 +623,7 @@ protected:
   ///
   void fillAssign(size_type n, const value_type &value) {
     if (n > capacity()) {
-      vector tmp(n, value, getAllocator());
+      vector tmp(n, value, get_allocator());
       swapData(*this);
     } else if (n > size()) {
       std::fill(begin(), end(), value);
@@ -703,9 +696,9 @@ protected:
         } else {
           ForwardIterator mid = first;
           ft::advance(mid, elemsAfter);
-          construct(mid, last, getFinishPtr(), getAllocator());
+          construct(mid, last, getFinishPtr());
           getFinishPtr() += n - elemsAfter;
-          construct(position.base(), oldFinish, getFinishPtr(), getAllocator());
+          construct(position.base(), oldFinish, getFinishPtr());
           getFinishPtr() += elemsAfter;
           std::copy(first, mid, position);
         }
@@ -714,10 +707,9 @@ protected:
         pointer newStart(allocate(len));
         pointer newFinish(newStart);
         newFinish =
-            construct(getStartPtr(), position.base(), newStart, getAllocator());
-        newFinish = construct(first, last, newFinish, getAllocator());
-        newFinish = construct(position.base(), getFinishPtr(), newFinish,
-                              getAllocator());
+            construct(getStartPtr(), position.base(), newStart);
+        newFinish = construct(first, last, newFinish);
+        newFinish = construct(position.base(), getFinishPtr(), newFinish);
         destroyAll();
         deallocate(getStartPtr(), getEndOfStoragePtr() - getStartPtr());
         getStartPtr() = newStart;
