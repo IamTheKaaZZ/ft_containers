@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 12:07:37 by bcosters          #+#    #+#             */
-/*   Updated: 2022/02/23 10:22:22 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/06/28 15:55:06 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,8 +171,8 @@ struct is_fundamental : public _or_<is_arithmetic<T>, is_void<T> >::type {};
 
 //  is_fundamemental //
 //---------------------------------------//
-template <typename _Tp>
-struct is_object : public _not_<_or_<is_reference<_Tp>, is_void<_Tp> > >::type {};
+template <typename T>
+struct is_object : public _not_<_or_<is_reference<T>, is_void<T> > >::type {};
 
 //  is_scalar //
 //---------------------------------------//
@@ -187,6 +187,25 @@ struct is_scalar
 template <class T> struct is_array : false_type {};
 template <class T> struct is_array<T[]> : true_type {};
 template <class T, std::size_t N> struct is_array<T[N]> : true_type {};
+
+//  is_byte //
+//---------------------------------------//
+template <typename T> struct is_byte {
+  enum { value = 0 };
+  typedef false_type type;
+};
+template <> struct is_byte<char> {
+  enum { value = 1 };
+  typedef true_type type;
+};
+template <> struct is_byte<signed char> {
+  enum { value = 1 };
+  typedef true_type type;
+};
+template <> struct is_byte<unsigned char> {
+  enum { value = 1 };
+  typedef true_type type;
+};
 
 //  enable_if //
 //---------------------------------------//
