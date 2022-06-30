@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 16:53:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/06/28 12:23:30 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/06/30 14:43:23 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,8 +69,10 @@ void vector_tests() {
     ft::vector<int> v;
  
     // Add two more integers to vector
+    std::cout << "push_back\n";
     v.push_back(25);
     v.push_back(13);
+    std::cout << "push_back\n";
  
     // Print out the vector
     std::cout << "v = { ";
