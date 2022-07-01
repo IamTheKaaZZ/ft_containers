@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/06/30 18:05:47 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/01 12:13:54 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <cassert>
 #include <cstddef>
 #include <exception>
+#include <list>
 #include <memory>
 #include <stdexcept>
 #include <iostream>
@@ -160,16 +161,13 @@ protected:
 
   template <typename Integer>
   pointer resolveConstruct(pointer ptr, Integer val, Integer index, true_type) {
-    std::cout << "Fill construct\n";
     alloc.construct(ptr + index, val);
     return ptr + index;
   }
   template <class Iter>
   pointer resolveConstruct(pointer ptr, Iter first, Iter last, false_type) {
-    std::cout << "Range Construct\n";
     pointer result = ptr;
     while (first != last) {
-        std::cout << "constructing *first: " << *first << '\n';
       alloc.construct(result++, *first++);
     }
     return result;
@@ -347,7 +345,7 @@ public:
       throw std::length_error("vector::reserve");
     if (this->capacity() < n) {
       const size_type oldSize = size();
-      pointer tmp = allocateAndCopy(n, Base::start, Base::finish);
+      pointer tmp = allocateAndCopy(n, iterator(Base::start), iterator(Base::finish));
       destroy(Base::start, Base::finish);
       deallocate(Base::start, capacity());
       Base::start = (tmp);
@@ -496,7 +494,10 @@ protected:
 
   void rangeCheck(size_type n) const {
     if (n >= this->size())
-        throw std::out_of_range("vector");
+      std::__throw_out_of_range_fmt(__N("vector::_M_range_check: __n "
+                                        "(which is %zu) >= this->size() "
+                                        "(which is %zu)"),
+                                    n, this->size());
   }
 
   void requireNonEmpty() { if (empty()) throw ft::ContainerIsEmptyError(); }
@@ -515,7 +516,7 @@ protected:
   }
 
   void reallocInsert(iterator position, const T &x) {
-    const size_type len = checkLen(size_type(1), "vector::_M_realloc_insert");
+    const size_type len = checkLen(size_type(1), "vector::reallocInsert");
     pointer oldStart = Base::start;
     pointer oldFinish = Base::finish;
     const size_type elemsBefore = position - begin();
@@ -729,7 +730,7 @@ protected:
           ft::fill(position, oldFinish, xCopy);
         }
       } else {
-        const size_type len = checkLen(n, "vector::_M_fill_insert");
+        const size_type len = checkLen(n, "vector::fillInsert");
         const size_type elemsBefore = position - begin();
         pointer newStart(allocate(len));
         pointer newFinish(newStart);

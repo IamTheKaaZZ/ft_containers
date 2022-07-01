@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/06/30 17:37:35 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/01 11:24:35 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -335,8 +335,12 @@ public:
 
   random_access_iterator() : _ptr() {}
   random_access_iterator(pointer ptr) : _ptr(ptr) {}
+  random_access_iterator(const random_access_iterator<T>& src) : _ptr(src._ptr) {}
   random_access_iterator(const std::iterator<std::random_access_iterator_tag, T>& stlIt) : _ptr(&(*stlIt)) {}
   ~random_access_iterator() {}
+
+  /// Enable conversion to const_iterator.
+  operator random_access_iterator<const value_type>() const { return (_ptr); }
 
   random_access_iterator &operator=(const random_access_iterator &rhs) {
     if (*this != rhs)
