@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 16:53:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/20 15:36:42 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/20 17:31:06 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -430,6 +430,15 @@ void vector_tests() {
   // destroy and deallocate:
   for (i2=0; i2<5; i2++) myvector.get_allocator().destroy(&p[i2]);
   myvector.get_allocator().deallocate(p,5);
+
+  std::cout << "\nCOMPARISON_OPERATORS\n";
+
+  if (foo==bar) std::cout << "foo and bar are equal\n";
+  if (foo!=bar) std::cout << "foo and bar are not equal\n";
+  if (foo< bar) std::cout << "foo is less than bar\n";
+  if (foo> bar) std::cout << "foo is greater than bar\n";
+  if (foo<=bar) std::cout << "foo is less than or equal to bar\n";
+  if (foo>=bar) std::cout << "foo is greater than or equal to bar\n";
 }
 
 int main() {

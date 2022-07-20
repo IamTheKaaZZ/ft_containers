@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/20 15:40:40 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/20 17:29:59 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -830,24 +830,44 @@ protected:
 };
 
 template <class T, class Alloc>
-  bool operator== (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
-
+bool operator==(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  if (lhs.size() == rhs.size()) {
+    for (size_t i = 0; i < lhs.size(); i++) {
+      if (lhs[i] != rhs[i]) {
+        return false;
+      }
+    }
+  } else {
+    return false;
   }
+  return true;
+}
 
 template <class T, class Alloc>
-  bool operator!= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+bool operator!=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return !(lhs == rhs);
+}
 
 template <class T, class Alloc>
-  bool operator<  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+bool operator<(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+  return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(),
+                                      rhs.end());
+}
 
 template <class T, class Alloc>
-  bool operator<= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+bool operator<=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+    return  !(rhs < lhs);
+}
 
 template <class T, class Alloc>
-  bool operator>  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+bool operator>(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+    return  (rhs < lhs);
+}
 
 template <class T, class Alloc>
-  bool operator>= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+bool operator>=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
+    return  !(lhs < rhs);
+}
 
 } // namespace ft
 
