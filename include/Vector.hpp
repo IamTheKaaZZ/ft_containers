@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/01 12:13:54 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/20 15:40:40 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,9 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstring>
 #include <exception>
+#include <iterator>
 #include <list>
 #include <memory>
 #include <stdexcept>
@@ -53,10 +55,14 @@ public:
   }
 
   void copyData(const vectorBase &rhs) {
-    start = (rhs.start);
-    finish = (rhs.finish);
-    endOfStorage = (rhs.endOfStorage);
+    destroyAll();
+    deallocate(start, capacity());
     alloc = rhs.alloc;
+    start = pointer();
+    finish = pointer();
+    endOfStorage = pointer();
+    createStorage(rhs.size());
+    finish = construct(start, rhs.start, rhs.finish);
   }
   void swapData(vectorBase &rhs) {
     vectorBase tmp;
@@ -88,19 +94,37 @@ public:
     return p + index;
   }
 
-  template <class Iter> pointer construct(Iter p, Iter first, Iter last) {
+  template <class Ptr>
+  typename enable_if<is_pointer<Ptr>::value, pointer>::type
+  construct(Ptr p, Ptr first, Ptr last) {
+    typedef typename ft::is_integral<Ptr>::type Integral;
+    return resolveConstruct(p, first, last, Integral());
+  }
+  template <class Iter>
+  typename enable_if<!is_pointer<Iter>::value, pointer>::type
+  construct(Iter p, Iter first, Iter last) {
+    typedef typename ft::is_integral<Iter>::type Integral;
+    return resolveConstruct(&(*p), first, last, Integral());
+  }
+  template <class Ptr, class Iter>
+  typename enable_if<is_pointer<Ptr>::value, pointer>::type
+  construct(Ptr p, Iter first, Iter last) {
     typedef typename ft::is_integral<Iter>::type Integral;
     return resolveConstruct(p, first, last, Integral());
   }
-  template <class Iter> pointer construct(pointer p, Iter first, Iter last) {
+  template <class Ptr, class Iter>
+  typename enable_if<!is_pointer<Iter>::value, pointer>::type
+  construct(Iter p, Ptr first, Ptr last) {
     typedef typename ft::is_integral<Iter>::type Integral;
-    return resolveConstruct(p, first, last, Integral());
+    return resolveConstruct(&(*p), Iter(first), Iter(last), Integral());
   }
-  template <class Iter> pointer construct(pointer p, pointer first, Iter last) {
+  template <class Ptr, class Iter>
+  pointer construct(Ptr p, Ptr first, Iter last) {
     typedef typename ft::is_integral<Iter>::type Integral;
     return resolveConstruct(p, Iter(first), last, Integral());
   }
-  template <class Iter> pointer construct(pointer p, Iter first, pointer last) {
+  template <class Ptr, class Iter>
+  pointer construct(Ptr p, Iter first, Ptr last) {
     typedef typename ft::is_integral<Iter>::type Integral;
     return resolveConstruct(p, first, Iter(last), Integral());
   }
@@ -166,6 +190,14 @@ protected:
   }
   template <class Iter>
   pointer resolveConstruct(pointer ptr, Iter first, Iter last, false_type) {
+    pointer result = ptr;
+    while (first != last) {
+      alloc.construct(result++, *first++);
+    }
+    return result;
+  }
+  template <>
+  pointer resolveConstruct(pointer ptr, pointer first, pointer last, false_type) {
     pointer result = ptr;
     while (first != last) {
       alloc.construct(result++, *first++);
@@ -315,16 +347,11 @@ public:
   ///
   void resize(size_type newSize, const value_type &val = value_type()) {
     if (newSize > size()) {
-      if (newSize > capacity()) {
-        (newSize / 2 < size()) ? reserve(size() * 2) : reserve(newSize);
-      }
-    } else if (newSize < size())
-      eraseAtEnd(Base::start + newSize);
-    pointer newFinish;
-    for (size_type i = size; i < newSize; i++) {
-      newFinish = construct(Base::start, val, i);
+        fillInsert(end(), newSize - size(), val);
+
+    } else if (newSize < size()) {
+      eraseUntilEnd(Base::start + newSize);
     }
-    Base::finish = (newFinish);
   }
 
   ///
@@ -436,14 +463,9 @@ public:
     eraseUntilEnd(--Base::finish);
   }
 
-  ///
-  /// @brief
-  ///
-  /// @param position
-  /// @param val
-  ///
-  void insert(iterator position, const value_type &val) {
+  iterator insert(iterator position, const value_type &val) {
     fillInsert(position, 1, val);
+    return  position--;
   }
 
   ///
@@ -467,16 +489,15 @@ public:
   iterator erase(iterator position) {
     if (position + 1 != end())
       std::copy(position + 1, end(), position);
-    Base::finish = (--Base::finish);
     --Base::finish;
-    destroyObj(Base::finish);
+    destroy(Base::finish);
     return position;
   }
   iterator erase(iterator first, iterator last) {
     if (first != last) {
       if (last != end())
         std::copy(last, end(), first);
-      eraseUntilEnd(first.base() + (end() - last));
+      eraseUntilEnd(&(*(first + (end() - last))));
     }
     return first;
   }
@@ -516,11 +537,11 @@ protected:
   }
 
   void reallocInsert(iterator position, const T &x) {
-    const size_type len = checkLen(size_type(1), "vector::reallocInsert");
+    size_type len = checkLen(1, "vector::reallocInsert");
     pointer oldStart = Base::start;
     pointer oldFinish = Base::finish;
     const size_type elemsBefore = position - begin();
-    pointer newStart = allocate(len + size());
+    pointer newStart = allocate(len);
     pointer newFinish(newStart);
     construct(newStart + elemsBefore, x);
     newFinish = construct(newStart, oldStart, position);
@@ -675,9 +696,7 @@ protected:
   ///
   void eraseUntilEnd(pointer pos) {
     if (size_type n = Base::finish - pos) {
-      for (pointer ptr = pos; ptr != Base::finish; ptr++) {
-        destroy(ptr);
-      }
+      destroy(pos, Base::finish);
       Base::finish = (pos);
     }
   }
@@ -714,43 +733,57 @@ protected:
 
   void fillInsert(iterator position, size_type n, const value_type &x) {
     if (n != 0) {
+        // Enough storage.
       if (size_type(Base::endOfStorage - Base::finish) >= n) {
-        value_type xCopy = x;
-        const size_type elemsAfter = end() - position;
-        pointer oldFinish(Base::finish);
-        if (elemsAfter > n) {
-          construct(Base::finish, iterator(Base::finish - n),
-                    iterator(Base::finish));
-          Base::finish += n;
-          ft::fill(position, position + n, xCopy);
+        value_type x_copy = x;
+        const size_type elems_after = end() - position;
+        pointer old_finish(Base::finish);
+        // More elems after position than being inserted.
+        if (elems_after > n) {
+            // Copy the last n elems forward.
+          Base::finish =
+              construct(Base::finish, iterator(Base::finish - n), iterator(Base::finish));
+          std::copy_backward(&(*position), old_finish - n, old_finish);
+          // Fill in the inserted elems.
+          ft::fill(position, position + n, x_copy);
         } else {
-          Base::finish = ft::fill_n(Base::finish, n - elemsAfter, xCopy);
-          construct(position, iterator(oldFinish), iterator(Base::finish));
-          Base::finish += elemsAfter;
-          ft::fill(position, oldFinish, xCopy);
+            // Fill the difference with the elems.
+          Base::finish = ft::fill_n(Base::finish, n - elems_after, x_copy);
+          // Copy position to old_finish to the end.
+          Base::finish = construct(Base::finish, position, old_finish);
+          // Fill in the inserted elems.
+          ft::fill(&(*position), old_finish, x_copy);
         }
       } else {
+        // Not enough storage, needs to be expanded.
         const size_type len = checkLen(n, "vector::fillInsert");
-        const size_type elemsBefore = position - begin();
-        pointer newStart(allocate(len));
-        pointer newFinish(newStart);
-        ft::fill_n(newStart + elemsBefore, n, x);
-        newFinish = pointer();
-        newFinish = construct(Base::start, position, newStart) + 1;
-        newFinish += n;
-        newFinish = construct(position, Base::finish, newFinish) + 1;
-        destroyAll();
-        deallocate(Base::start, Base::endOfStorage - Base::start);
-        Base::start = (newStart);
-        Base::finish = (newFinish);
-        Base::endOfStorage = (newStart + len);
+        const size_type elems_before = position - begin();
+        pointer new_start(allocate(len));
+        pointer new_finish(new_start);
+        // Fill in the space after the elems with the inserted ones.
+        ft::fill_n(new_start + elems_before, n, x);
+        new_finish = pointer();
+        // Fill in the elems_before.
+        new_finish = construct(new_start, Base::start, position);
+        // Fill in the rest of the elems after the inserted ones.
+        new_finish = construct(new_finish, position, Base::finish);
+        if (end() - position == 0) {
+            new_finish = new_start + elems_before + n;
+        }
+        // Destroy and deallocate the old elems.
+        destroy(Base::start, Base::finish);
+        deallocate(Base::start, capacity());
+        // Update the pointers to the new ones.
+        Base::start = new_start;
+        Base::finish = new_finish;
+        Base::endOfStorage = new_start + len;
       }
     }
   }
 
   template <typename InputIterator>
   void rangeInsert(iterator pos, InputIterator first, InputIterator last,
-                   std::input_iterator_tag) {
+                   ft::input_iterator_tag) {
     {
       for (; first != last; ++first) {
         pos = insert(pos, *first);
@@ -761,43 +794,60 @@ protected:
 
   template <typename ForwardIterator>
   void rangeInsert(iterator position, ForwardIterator first,
-                   ForwardIterator last, std::forward_iterator_tag) {
+                   ForwardIterator last, ft::forward_iterator_tag) {
     if (first != last) {
       const size_type n = ft::distance(first, last);
       if (size_type(Base::endOfStorage - Base::finish) >= n) {
-        const size_type elemsAfter = end() - position;
-        pointer oldFinish(Base::finish);
-        if (elemsAfter > n) {
-          construct(Base::finish - n, Base::finish, Base::finish);
-          Base::finish += n;
-          std::copy_backward(position, oldFinish - n, oldFinish);
+        const size_type elems_after = end() - position;
+        pointer old_finish(Base::finish);
+        if (elems_after > n) {
+          Base::finish = construct(Base::finish, iterator(Base::finish - n),
+                                   iterator(Base::finish));
+          std::copy_backward(&(*position), old_finish - n, old_finish);
           std::copy(first, last, position);
         } else {
           ForwardIterator mid = first;
-          ft::advance(mid, elemsAfter);
-          construct(mid, last, Base::finish);
-          Base::finish += n - elemsAfter;
-          construct(position.base(), oldFinish, Base::finish);
-          Base::finish += elemsAfter;
+          ft::advance(mid, elems_after);
+          Base::finish = construct(Base::finish, iterator(mid), iterator(last));
+          Base::finish = construct(Base::finish, position, old_finish);
           std::copy(first, mid, position);
         }
       } else {
-        const size_type len = checkLen(n, "vector::rangeInsert");
-        pointer newStart(allocate(len));
-        pointer newFinish(newStart);
-        newFinish =
-            construct(Base::start, position.base(), newStart);
-        newFinish = construct(first, last, newFinish);
-        newFinish = construct(position.base(), Base::finish, newFinish);
-        destroyAll();
+        const size_type len = checkLen(n, "vector::_M_range_insert");
+        pointer new_start(allocate(len));
+        pointer new_finish(new_start);
+        new_finish = construct(new_start, Base::start, position);
+        new_finish = construct(new_finish, iterator(first), iterator(last));
+        new_finish = construct(new_finish, position, Base::finish);
+        destroy(Base::start, Base::finish);
         deallocate(Base::start, Base::endOfStorage - Base::start);
-        Base::start = newStart;
-        Base::finish = newFinish;
-        Base::endOfStorage = newStart + len;
+        Base::start = new_start;
+        Base::finish = new_finish;
+        Base::endOfStorage = new_start + len;
       }
     }
   }
 };
+
+template <class T, class Alloc>
+  bool operator== (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs) {
+
+  }
+
+template <class T, class Alloc>
+  bool operator!= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+
+template <class T, class Alloc>
+  bool operator<  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+
+template <class T, class Alloc>
+  bool operator<= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+
+template <class T, class Alloc>
+  bool operator>  (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
+
+template <class T, class Alloc>
+  bool operator>= (const vector<T,Alloc>& lhs, const vector<T,Alloc>& rhs);
 
 } // namespace ft
 

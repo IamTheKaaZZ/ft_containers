@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/01 11:24:35 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/20 14:11:26 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -345,6 +345,7 @@ public:
   random_access_iterator &operator=(const random_access_iterator &rhs) {
     if (*this != rhs)
       this->_ptr = rhs._ptr;
+    return  *this;
   };
   random_access_iterator<T> &operator++() {
     this->_ptr++;

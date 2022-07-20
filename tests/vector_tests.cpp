@@ -6,11 +6,12 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 16:53:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/01 12:14:40 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/20 15:36:42 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <cstddef>
+#include <sys/types.h>
 #ifndef _IS_TEST
 #include <algorithm>
 // #include <bits/stdc++.h>
@@ -274,6 +275,161 @@ void vector_tests() {
       v1.push_back(n);
     }
   }
+
+  std::cout << "\nBEGIN/END\n";
+
+  ft::vector<int> myvector;
+  for (int i=1; i<=5; i++) myvector.push_back(i);
+
+  std::cout << "myvector contains:";
+  for (ft::vector<int>::iterator it = myvector.begin() ; it != myvector.end(); ++it)
+    std::cout << ' ' << *it;
+  std::cout << '\n';
+
+  std::cout << "\nRBEGIN/REND\n";
+
+  int i=0;
+
+  ft::vector<int>::reverse_iterator rIt = myvector.rbegin();
+  for (; rIt!= myvector.rend(); ++rIt)
+    *rIt = ++i;
+
+  std::cout << "myvector contains:";
+  for (ft::vector<int>::iterator it = myvector.begin(); it != myvector.end(); ++it)
+    std::cout << ' ' << *it;
+  std::cout << '\n';
+
+  std::cout << "\nRESIZE\n";
+
+  myvector.resize(5);
+  std::cout << "resize\n";
+  myvector.resize(8,100);
+  std::cout << "resize\n";
+  myvector.resize(12);
+  std::cout << "resize\n";
+
+  std::cout << "myvector contains:";
+  for (ft::vector<int>::size_type i=0;i<myvector.size();i++)
+    std::cout << ' ' << myvector[i];
+  std::cout << '\n';
+
+  std::cout << "\nSIZE/CAPACITY/MAX_SIZE\n";
+
+  for (int i=0; i<100; i++) myvector.push_back(i);
+
+  std::cout << "size: " << (int) myvector.size() << '\n';
+  std::cout << "capacity: " << (int) myvector.capacity() << '\n';
+  std::cout << "max_size: " << (int) myvector.max_size() << '\n';
+
+  std::cout << "\nPOP_BACK\n";
+
+  int sum (0);
+  myvector.push_back (100);
+  myvector.push_back (200);
+  myvector.push_back (300);
+
+  while (!myvector.empty())
+  {
+    sum+=myvector.back();
+    myvector.pop_back();
+  }
+
+  std::cout << "The elements of myvector add up to " << sum << '\n';
+
+  std::cout << "\nINSERT\n";
+
+  ft::vector<int>::iterator iT;
+
+  iT = myvector.begin();
+  iT = myvector.insert ( iT , 200 );
+
+  myvector.insert (iT,2,300);
+
+  // "it" no longer valid, get a new one:
+  iT = myvector.begin();
+
+  ft::vector<int> anothervector (2,400);
+  myvector.insert (iT+2,anothervector.begin(),anothervector.end());
+
+  int myarray [] = { 501,502,503 };
+  myvector.insert (myvector.begin(), myarray, myarray+3);
+
+  std::cout << "myvector contains:";
+  for (iT=myvector.begin(); iT<myvector.end(); iT++)
+    std::cout << ' ' << *iT;
+  std::cout << '\n';
+
+  std::cout << "\nERASE\n";
+
+ // set some values (from 1 to 10)
+  for (int i=1; i<=10; i++) myvector.push_back(i);
+
+  // erase the 6th element
+  myvector.erase (myvector.begin()+5);
+
+  // erase the first 3 elements:
+  myvector.erase (myvector.begin(),myvector.begin()+3);
+
+  std::cout << "myvector contains:";
+  for (unsigned i=0; i<myvector.size(); ++i)
+    std::cout << ' ' << myvector[i];
+  std::cout << '\n';
+
+  std::cout << "\nSWAP\n";
+
+  ft::vector<int> foo (3,100);   // three ints with a value of 100
+  ft::vector<int> bar (5,200);   // five ints with a value of 200
+
+  foo.swap(bar);
+
+  std::cout << "foo contains:";
+  for (unsigned i=0; i<foo.size(); i++)
+    std::cout << ' ' << foo[i];
+  std::cout << '\n';
+
+  std::cout << "bar contains:";
+  for (unsigned i=0; i<bar.size(); i++)
+    std::cout << ' ' << bar[i];
+  std::cout << '\n';
+
+  std::cout << "\nCLEAR\n";
+
+  myvector.push_back (100);
+  myvector.push_back (200);
+  myvector.push_back (300);
+
+  std::cout << "myvector contains:";
+  for (unsigned i=0; i<myvector.size(); i++)
+    std::cout << ' ' << myvector[i];
+  std::cout << '\n';
+
+  myvector.clear();
+  myvector.push_back (1101);
+  myvector.push_back (2202);
+
+  std::cout << "myvector contains:";
+  for (unsigned i=0; i<myvector.size(); i++)
+    std::cout << ' ' << myvector[i];
+  std::cout << '\n';
+
+  std::cout << "\nGET_ALLOCATOR\n";
+
+  int * p;
+  unsigned int i2;
+
+  // allocate an array with space for 5 elements using vector's allocator:
+  p = myvector.get_allocator().allocate(5);
+
+  // construct values in-place on the array:
+  for (i2=0; i2<5; i2++) myvector.get_allocator().construct(&p[i],i);
+
+  std::cout << "The allocated array contains:";
+  for (i2=0; i2<5; i2++) std::cout << ' ' << p[i2];
+  std::cout << '\n';
+
+  // destroy and deallocate:
+  for (i2=0; i2<5; i2++) myvector.get_allocator().destroy(&p[i2]);
+  myvector.get_allocator().deallocate(p,5);
 }
 
 int main() {
