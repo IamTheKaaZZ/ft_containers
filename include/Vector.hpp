@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/20 17:29:59 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/21 14:48:30 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,12 @@ class ContainerIsEmptyError : public std::exception {
     }
 };
 
+///
+/// @brief Vector Base class, contains the memory management.
+/// 
+/// @tparam T 
+/// @tparam Allocator 
+///
 template <class T, class Allocator = std::allocator<T> > struct vectorBase {
   // Implicit vector data
   typedef T value_type;
@@ -54,6 +60,11 @@ public:
     deallocate(start, capacity());
   }
 
+  ///
+  /// @brief Helper function to copy the internal data.
+  /// 
+  /// @param rhs 
+  ///
   void copyData(const vectorBase &rhs) {
     destroyAll();
     deallocate(start, capacity());
@@ -64,6 +75,12 @@ public:
     createStorage(rhs.size());
     finish = construct(start, rhs.start, rhs.finish);
   }
+
+  ///
+  /// @brief Helper function to swap the internal data.
+  /// 
+  /// @param rhs 
+  ///
   void swapData(vectorBase &rhs) {
     vectorBase tmp;
     tmp.copyData(*this);
@@ -71,10 +88,22 @@ public:
     rhs.copyData(tmp);
   }
 
+  ///
+  /// @brief Allocates the given number of elements using the allocator.
+  /// 
+  /// @param n 
+  /// @return pointer 
+  ///
   pointer allocate(size_type n) {
     return (n != 0 ? alloc.allocate(n) : pointer());
   }
 
+  ///
+  /// @brief Deallocates aka frees the memory given using the allocator.
+  /// 
+  /// @param p 
+  /// @param n 
+  ///
   void deallocate(pointer p, size_type n) {
     if (p) {
       alloc.deallocate(p, n);
@@ -94,6 +123,15 @@ public:
     return p + index;
   }
 
+  ///
+  /// @brief Constructs the objects in a given range in the allocated pointer.
+  /// 
+  /// @tparam Ptr 
+  /// @param p 
+  /// @param first 
+  /// @param last 
+  /// @return pointer to the element after the last constructed object.
+  ///
   template <class Ptr>
   typename enable_if<is_pointer<Ptr>::value, pointer>::type
   construct(Ptr p, Ptr first, Ptr last) {
@@ -130,13 +168,20 @@ public:
   }
 
   ///
-  /// @brief Destroys the object at the pointer index, deos not free memory.
+  /// @brief Destroys the object at the pointer index, does not free memory.
   ///
   /// @param ptr
   /// @param i
   ///
   void destroy(pointer ptr, size_type i = 0) { alloc.destroy(ptr + i); }
 
+  ///
+  /// @brief Destroys the objects in a given range, does not free memory.
+  /// 
+  /// @tparam Iter 
+  /// @param first 
+  /// @param last 
+  ///
   template<typename Iter>
   void destroy(Iter first, Iter last) {
     while(first != last) {
@@ -177,12 +222,27 @@ public:
   size_type capacity() const { return size_type(endOfStorage - start); }
 
 protected:
+  
+  ///
+  /// @brief Create storage of a given size, updates the internal pointers.
+  /// 
+  /// @param n 
+  ///
   void createStorage(size_type n) {
     start = this->allocate(n);
     finish = start;
     endOfStorage = start + n;
   }
 
+  ///
+  /// @brief Resolve the internal construction.
+  /// 
+  /// @tparam Integer 
+  /// @param ptr 
+  /// @param val 
+  /// @param index 
+  /// @return pointer 
+  ///
   template <typename Integer>
   pointer resolveConstruct(pointer ptr, Integer val, Integer index, true_type) {
     alloc.construct(ptr + index, val);
@@ -327,7 +387,7 @@ public:
   /// ---------- Member Functions
 
   ///
-  /// @brief Replaces the contents with b copies of value value.
+  /// @brief Replaces the contents with n copies of value val.
   ///
   /// @param n
   /// @param val
@@ -340,7 +400,7 @@ public:
   }
 
   ///
-  /// @brief Resize the vector
+  /// @brief Resize the vector, either adds or erases.
   ///
   /// @param newSize
   /// @param val
@@ -363,7 +423,7 @@ public:
   bool empty() const { return begin() == end(); }
 
   ///
-  /// @brief Increase the capacity to n.
+  /// @brief Increase the capacity to n, does nothing if capacity is bigger than n.
   ///
   /// @param n
   ///
@@ -469,7 +529,7 @@ public:
   }
 
   ///
-  /// @brief
+  /// @brief Insert the valua val n times before the given position.
   ///
   /// @param position
   /// @param n
@@ -479,6 +539,14 @@ public:
     fillInsert(position, n, val);
   }
 
+  ///
+  /// @brief Insert the given range before the given position.
+  /// 
+  /// @tparam InputIt 
+  /// @param position 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename InputIt>
   void insert(iterator position, InputIt first, InputIt last) {
     // Check whether it's an integral type.  If so, it's not an iterator.
@@ -486,6 +554,12 @@ public:
     insertDispatch(position, first, last, Integral());
   }
 
+  ///
+  /// @brief Erase the element at the given position.
+  /// 
+  /// @param position 
+  /// @return iterator 
+  ///
   iterator erase(iterator position) {
     if (position + 1 != end())
       std::copy(position + 1, end(), position);
@@ -493,6 +567,14 @@ public:
     destroy(Base::finish);
     return position;
   }
+
+  ///
+  /// @brief Erase the given range.
+  /// 
+  /// @param first 
+  /// @param last 
+  /// @return iterator 
+  ///
   iterator erase(iterator first, iterator last) {
     if (first != last) {
       if (last != end())
@@ -502,8 +584,17 @@ public:
     return first;
   }
 
+  ///
+  /// @brief Swap the data with the one of another vector.
+  /// 
+  /// @param other 
+  ///
   void swap(vector &other) { swapData(other); }
 
+  ///
+  /// @brief Empty the vector.
+  /// 
+  ///
   void clear() { erase(begin(), end()); }
 
 protected:
@@ -513,6 +604,11 @@ protected:
   using Base::destroyAll;
   using Base::swapData;
 
+  ///
+  /// @brief Check if a given n will go out of range.
+  /// 
+  /// @param n 
+  ///
   void rangeCheck(size_type n) const {
     if (n >= this->size())
       std::__throw_out_of_range_fmt(__N("vector::_M_range_check: __n "
@@ -521,8 +617,21 @@ protected:
                                     n, this->size());
   }
 
+  ///
+  /// @brief Check if the container is not empty.
+  /// 
+  ///
   void requireNonEmpty() { if (empty()) throw ft::ContainerIsEmptyError(); }
 
+  ///
+  /// @brief Allocate a given size and copy the range into it.
+  /// 
+  /// @tparam ForwardIterator 
+  /// @param n 
+  /// @param first 
+  /// @param last 
+  /// @return pointer 
+  ///
   template <typename ForwardIterator>
   pointer allocateAndCopy(size_type n, ForwardIterator first,
                           ForwardIterator last) {
@@ -536,6 +645,12 @@ protected:
     }
   }
 
+  ///
+  /// @brief Increase the allocated size by one and insert the value before position.
+  /// 
+  /// @param position 
+  /// @param x 
+  ///
   void reallocInsert(iterator position, const T &x) {
     size_type len = checkLen(1, "vector::reallocInsert");
     pointer oldStart = Base::start;
@@ -604,29 +719,64 @@ protected:
     Base::finish = (ft::fill_n(Base::start, n, value));
   }
 
+  ///
+  /// @brief Dispatcher to catch different inputs when assinging.
+  /// 
+  /// @tparam InputIterator 
+  /// @param first 
+  /// @param last 
+  ///
   template<typename InputIterator>
   void assignDispatch(InputIterator first, InputIterator last, ft::false_type) {
     assignHelper(first, last, ft::__iterator_category(first));
   }
 
+  ///
+  /// @brief Template specialization for std::input_iterators.
+  /// 
+  /// @tparam InputIterator 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename InputIterator>
   void assignHelper(InputIterator first, InputIterator last,
                     std::input_iterator_tag) {
                         assignHelper(first, last, ft::input_iterator_tag());
                     }
 
+  ///
+  /// @brief Template specialization for std::forward_iterators.
+  /// 
+  /// @tparam ForwardIterator 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename ForwardIterator>
   void assignHelper(ForwardIterator first, ForwardIterator last,
                     std::forward_iterator_tag) {
                         assignHelper(first, last, ft::forward_iterator_tag());
                     }
 
+  ///
+  /// @brief Template specialization for std::random_access_iterators.
+  /// 
+  /// @tparam ForwardIterator 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename ForwardIterator>
   void assignHelper(ForwardIterator first, ForwardIterator last,
                     std::random_access_iterator_tag) {
                         assignHelper(first, last, ft::forward_iterator_tag());
                     }
 
+  ///
+  /// @brief Template specialization for ft::input_iterators.
+  /// 
+  /// @tparam InputIterator 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename InputIterator>
   void assignHelper(InputIterator first, InputIterator last,
                     ft::input_iterator_tag) {
@@ -639,6 +789,13 @@ protected:
       rangeInsert(end(), first, last, ft::__iterator_category(first));
   }
 
+  ///
+  /// @brief Template specialization for ft::forward_iterators.
+  /// 
+  /// @tparam ForwardIterator 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename ForwardIterator>
   void assignHelper(ForwardIterator first, ForwardIterator last,
                     ft::forward_iterator_tag) {
@@ -671,17 +828,40 @@ protected:
     fillAssign(n, val);
   }
 
+  ///
+  /// @brief Catches the Integer resolution, resolves like a normal insert.
+  /// 
+  /// @tparam Integer 
+  /// @param pos 
+  /// @param n 
+  /// @param val 
+  ///
   template <typename Integer>
   void insertDispatch(iterator pos, Integer n, Integer val, ft::true_type) {
     fillInsert(pos, n, val);
   }
 
+  ///
+  /// @brief Catches the range insert resolution.
+  /// 
+  /// @tparam InputIterator 
+  /// @param pos 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename InputIterator>
   void insertDispatch(iterator pos, InputIterator first, InputIterator last,
                       ft::false_type) {
     rangeInsert(pos, first, last, ft::__iterator_category(first));
   }
 
+  ///
+  /// @brief Checks if increasing the length by n goes out of range.
+  /// 
+  /// @param n 
+  /// @param s 
+  /// @return size_type 
+  ///
   size_type checkLen(size_type n, const char *s) const {
     if (max_size() - size() < n)
       throw std::length_error(s);
@@ -701,6 +881,13 @@ protected:
     }
   }
 
+  ///
+  /// @brief Returns the dataPtr.
+  /// 
+  /// @tparam U 
+  /// @param ptr 
+  /// @return U* 
+  ///
   template <typename U> U *dataPtr(U *ptr) const { return ptr; }
   template <typename U> U *dataPtr(U *ptr) { return ptr; }
   template <typename Ptr> value_type *dataPtr(Ptr ptr) {
@@ -731,6 +918,13 @@ protected:
       eraseUntilEnd(ft::fill_n(Base::start, n, value));
   }
 
+  ///
+  /// @brief Fills the vector with n elems with value vx before the position.
+  /// 
+  /// @param position 
+  /// @param n 
+  /// @param x 
+  ///
   void fillInsert(iterator position, size_type n, const value_type &x) {
     if (n != 0) {
         // Enough storage.
@@ -781,6 +975,14 @@ protected:
     }
   }
 
+  ///
+  /// @brief Inserts a range before the position, input_iterator specialization.
+  /// 
+  /// @tparam InputIterator 
+  /// @param pos 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename InputIterator>
   void rangeInsert(iterator pos, InputIterator first, InputIterator last,
                    ft::input_iterator_tag) {
@@ -792,6 +994,14 @@ protected:
     }
   }
 
+  ///
+  /// @brief Inserts a range before the position, forward_iterator specialization.
+  /// 
+  /// @tparam ForwardIterator 
+  /// @param position 
+  /// @param first 
+  /// @param last 
+  ///
   template <typename ForwardIterator>
   void rangeInsert(iterator position, ForwardIterator first,
                    ForwardIterator last, ft::forward_iterator_tag) {
@@ -829,6 +1039,29 @@ protected:
   }
 };
 
+///
+/// @brief Static swap function for two vectors.
+/// 
+/// @tparam T 
+/// @tparam Alloc 
+/// @param x 
+/// @param y 
+///
+template <class T, class Alloc>
+void swap(vector<T, Alloc> &x, vector<T, Alloc> &y) {
+  x.swap(y);
+}
+
+///
+/// @brief Relational operators for vectors with the same contained type and allocator.
+/// 
+/// @tparam T 
+/// @tparam Alloc 
+/// @param lhs 
+/// @param rhs 
+/// @return true 
+/// @return false 
+///
 template <class T, class Alloc>
 bool operator==(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
   if (lhs.size() == rhs.size()) {
@@ -856,17 +1089,17 @@ bool operator<(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
 
 template <class T, class Alloc>
 bool operator<=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
-    return  !(rhs < lhs);
+  return !(rhs < lhs);
 }
 
 template <class T, class Alloc>
 bool operator>(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
-    return  (rhs < lhs);
+  return (rhs < lhs);
 }
 
 template <class T, class Alloc>
 bool operator>=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
-    return  !(lhs < rhs);
+  return !(lhs < rhs);
 }
 
 } // namespace ft

@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/27 16:53:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/20 17:31:06 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/21 14:33:20 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -392,6 +392,18 @@ void vector_tests() {
     std::cout << ' ' << bar[i];
   std::cout << '\n';
 
+  ft::swap(foo, bar);
+
+  std::cout << "foo contains:";
+  for (unsigned i=0; i<foo.size(); i++)
+    std::cout << ' ' << foo[i];
+  std::cout << '\n';
+
+  std::cout << "bar contains:";
+  for (unsigned i=0; i<bar.size(); i++)
+    std::cout << ' ' << bar[i];
+  std::cout << '\n';
+
   std::cout << "\nCLEAR\n";
 
   myvector.push_back (100);
@@ -421,7 +433,7 @@ void vector_tests() {
   p = myvector.get_allocator().allocate(5);
 
   // construct values in-place on the array:
-  for (i2=0; i2<5; i2++) myvector.get_allocator().construct(&p[i],i);
+  for (i2=0; i2<5; i2++) myvector.get_allocator().construct(&p[i2],i2);
 
   std::cout << "The allocated array contains:";
   for (i2=0; i2<5; i2++) std::cout << ' ' << p[i2];
