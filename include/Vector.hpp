@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/21 14:48:30 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/21 15:29:33 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -1083,7 +1083,7 @@ bool operator!=(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
 
 template <class T, class Alloc>
 bool operator<(const vector<T, Alloc> &lhs, const vector<T, Alloc> &rhs) {
-  return std::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(),
+  return ft::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(),
                                       rhs.end());
 }
 
