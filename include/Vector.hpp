@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/21 15:29:33 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/25 15:53:02 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include <iterator>
 #include <list>
 #include <memory>
+#include <pthread.h>
 #include <stdexcept>
 #include <iostream>
 namespace ft {
@@ -86,6 +87,9 @@ public:
     tmp.copyData(*this);
     copyData(rhs);
     rhs.copyData(tmp);
+    tmp.alloc = rhs.alloc;
+    rhs.alloc = this->alloc;
+    this->alloc = tmp.alloc;
   }
 
   ///
@@ -133,25 +137,25 @@ public:
   /// @return pointer to the element after the last constructed object.
   ///
   template <class Ptr>
-  typename enable_if<is_pointer<Ptr>::value, pointer>::type
+  typename enable_if<ft::is_pointer<Ptr>::value, pointer>::type
   construct(Ptr p, Ptr first, Ptr last) {
     typedef typename ft::is_integral<Ptr>::type Integral;
     return resolveConstruct(p, first, last, Integral());
   }
   template <class Iter>
-  typename enable_if<!is_pointer<Iter>::value, pointer>::type
+  typename enable_if<!ft::is_pointer<Iter>::value, pointer>::type
   construct(Iter p, Iter first, Iter last) {
     typedef typename ft::is_integral<Iter>::type Integral;
     return resolveConstruct(&(*p), first, last, Integral());
   }
   template <class Ptr, class Iter>
-  typename enable_if<is_pointer<Ptr>::value, pointer>::type
+  typename enable_if<ft::is_pointer<Ptr>::value, pointer>::type
   construct(Ptr p, Iter first, Iter last) {
     typedef typename ft::is_integral<Iter>::type Integral;
     return resolveConstruct(p, first, last, Integral());
   }
   template <class Ptr, class Iter>
-  typename enable_if<!is_pointer<Iter>::value, pointer>::type
+  typename enable_if<!ft::is_pointer<Iter>::value, pointer>::type
   construct(Iter p, Ptr first, Ptr last) {
     typedef typename ft::is_integral<Iter>::type Integral;
     return resolveConstruct(&(*p), Iter(first), Iter(last), Integral());

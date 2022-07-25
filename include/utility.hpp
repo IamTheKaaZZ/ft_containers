@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 12:07:37 by bcosters          #+#    #+#             */
-/*   Updated: 2022/06/28 15:55:06 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/25 15:53:28 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -369,6 +369,13 @@ template <class T1, class T2> struct pair {
 //  pair - make_pair //
 template <class T1, class T2> pair<T1, T2> make_pair(T1 x, T2 y) {
   return (pair<T1, T2>(x, y));
+}
+
+template<typename  T>
+void swap(T& lhs, T& rhs) {
+    T temp = rhs;
+    rhs = lhs;
+    lhs = temp;
 }
 
 } // namespace ft
