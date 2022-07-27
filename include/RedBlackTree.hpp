@@ -65,8 +65,8 @@ template <typename Value> struct RedBlackTreeNode {
     right = rhs.right;
   }
 
-  Value *valPtr() { return ft::addressof(value); }
-  const Value *valPtr() const { return ft::addressof(value); }
+  Value *valPtr() { return &value; }
+  const Value *valPtr() const { return &(value); }
 
   node_ptr minimum() { return minimum(this); }
   static node_ptr minimum(node_ptr x) {
@@ -122,7 +122,7 @@ template <typename Value> struct RedBlackTreeNode {
   const_node_ptr increment(const_node_ptr x) throw() {
     return increment_helper(const_cast<node_ptr>(x));
   }
-  node_ptr increment() { increment(this); }
+  node_ptr increment() { return (increment(this)); }
 
   static node_ptr decrement_helper(node_ptr x) throw() {
     if (x->color == Red && x->parent->parent == x)
@@ -153,7 +153,7 @@ template <typename Value> struct RedBlackTreeNode {
   const_node_ptr decrement(const_node_ptr x) throw() {
     return decrement_helper(const_cast<node_ptr>(x));
   }
-  node_ptr decrement() { decrement(this); }
+  node_ptr decrement() { return (decrement(this)); }
 
   static void rotate_left_helper(node_ptr const x, node_ptr &root) {
     node_ptr const y = x->right;
@@ -177,7 +177,7 @@ template <typename Value> struct RedBlackTreeNode {
   /// @param x
   /// @param root
   ///
-  void rotate_left(node_ptr const x, node_ptr &root) {
+  static void rotate_left(node_ptr const x, node_ptr &root) {
     rotate_left_helper(x, root);
   }
 
@@ -203,7 +203,7 @@ template <typename Value> struct RedBlackTreeNode {
   /// @param x
   /// @param root
   ///
-  void rotate_right(node_ptr const x, node_ptr &root) {
+  static void rotate_right(node_ptr const x, node_ptr &root) {
     rotate_right_helper(x, root);
   }
 
@@ -215,7 +215,7 @@ template <typename Value> struct RedBlackTreeNode {
   /// @param p
   /// @param header
   ///
-  void insert_and_rebalance(const bool insert_left, node_ptr x, node_ptr p,
+  static void insert_and_rebalance(const bool insert_left, node_ptr x, node_ptr p,
                             RedBlackTreeNode &header) throw() {
     node_ptr &root = header.parent;
     // Initialize fields in new node to insert.
@@ -286,7 +286,7 @@ template <typename Value> struct RedBlackTreeNode {
   /// @param header
   /// @return RedBlackTreeNode*
   ///
-  node_ptr rebalance_for_erase(node_ptr const z,
+  static node_ptr rebalance_for_erase(node_ptr const z,
                                RedBlackTreeNode &header) throw() {
     node_ptr &root = header.parent;
     node_ptr &leftmost = header.left;
@@ -424,7 +424,7 @@ template <typename Value> struct RedBlackTreeNode {
   /// @param root
   /// @return unsigned int
   ///
-  unsigned int black_count(const_node_ptr node, const_node_ptr root) throw() {
+  static unsigned int black_count(const_node_ptr node, const_node_ptr root) throw() {
     if (node == 0)
       return 0;
     unsigned int sum = 0;
@@ -503,25 +503,27 @@ template <typename T> struct RedBlackTree_iterator {
   reference operator*() const { return *node->valPtr(); }
   pointer operator->() const { return node->valPtr(); }
   RBT_it &operator++() {
-    node->increment();
+    node = node->increment();
     return *this;
   }
   RBT_it operator++(int) {
     RBT_it tmp = *this;
-    node->increment();
+    node = node->increment();
     return tmp;
   }
   RBT_it &operator--() {
-    node->decrement();
+    node = node->decrement();
     return *this;
   }
   RBT_it operator--(int) {
     RBT_it tmp = *this;
-    node->decrement();
+    node = node->decrement();
     return tmp;
   }
   bool operator==(const RBT_it &x) const { return node == x.node; }
   bool operator!=(const RBT_it &x) const { return node != x.node; }
+  bool operator==(const node_ptr &x) const { return node == x; }
+  bool operator!=(const node_ptr &x) const { return node != x; }
 
   node_ptr node;
 };
@@ -544,25 +546,27 @@ template <typename T> struct RedBlackTree_const_iterator {
   reference operator*() const { return *node->valptr(); }
   pointer operator->() const { return node->valptr(); }
   RBT_It &operator++() {
-    node->increment();
+    node = node->increment();
     return *this;
   }
   RBT_It operator++(int) {
     RBT_It tmp = *this;
-    node->increment();
+    node = node->increment();
     return tmp;
   }
   RBT_It &operator--() {
-    node->decrement();
+    node = node->decrement();
     return *this;
   }
   RBT_It operator--(int) {
     RBT_It tmp = *this;
-    node->decrement();
+    node = node->decrement();
     return tmp;
   }
   bool operator==(const RBT_It &x) const { return node == x.node; }
   bool operator!=(const RBT_It &x) const { return node != x.node; }
+  bool operator==(const node_ptr &x) const { return node == x; }
+  bool operator!=(const node_ptr &x) const { return node != x; }
 
   node_ptr node;
 };
@@ -588,7 +592,7 @@ inline bool operator!=(const RedBlackTree_iterator<Val> &x,
 /// @tparam Alloc
 ///
 template <typename Key, typename Value, typename KeyOfValue, typename Compare,
-          typename Alloc = std::allocator<Value>>
+          typename Alloc = std::allocator<Value> >
 class RedBlackTree {
 public:
   typedef Key key_type;
@@ -600,7 +604,7 @@ public:
   typedef size_t size_type;
   typedef ptrdiff_t difference_type;
   typedef Alloc allocator_type;
-  typedef std::allocator<RedBlackTreeNode<Value>> node_allocator_type;
+  typedef std::allocator<RedBlackTreeNode<Value> > node_allocator_type;
 
   ///
   /// @brief Get the node allocator type object
@@ -643,7 +647,7 @@ protected:
   /// @param p
   ///
   void put_node(node_ptr p) {
-    get_node_allocator_type().deallocate(get_node_allocator_type(), p, 1);
+    get_node_allocator_type().deallocate(p, 1);
   }
 
   ///
@@ -891,7 +895,12 @@ public:
   template <class II> void insert_unique(II first, II last) {
     AllocNode an(*this);
     for (; first != last; ++first)
-      insert_unique_(end(), *first, an);
+      insert_unique(end(), *first, an);
+  }
+
+  iterator insert_unique(const_iterator pos, const value_type &x) {
+    AllocNode an(*this);
+    return insert_unique(pos, x, an);
   }
 
   template <class II> void insert_equal(II first, II last) {
@@ -983,16 +992,16 @@ public:
 
   ///
   /// @brief Find the lower_bound of the given key in the tree (earliest it
-  /// appears).
+  /// appears, or the next greater one if it does not exist.).
   ///
   /// @param k
   /// @return iterator
   ///
   iterator lower_bound(const key_type &k) {
-    return lower_bound_(begin(), end(), k);
+    return lower_bound_(beginInternal(), endInternal(), k);
   }
   const_iterator lower_bound(const key_type &k) const {
-    return lower_bound_(begin(), end(), k);
+    return lower_bound_(beginInternal(), endInternal(), k);
   }
 
   ///
@@ -1002,10 +1011,10 @@ public:
   /// @return iterator
   ///
   iterator upper_bound(const key_type &k) {
-    return upper_bound_(begin(), end(), k);
+    return upper_bound_(beginInternal(), endInternal(), k);
   }
   const_iterator upper_bound(const key_type &k) const {
-    return upper_bound_(begin(), end(), k);
+    return upper_bound_(beginInternal(), endInternal(), k);
   }
 
 protected:
@@ -1023,7 +1032,7 @@ protected:
   }
   node_ptr endInternal() { return &internalData.header; }
   const_node_ptr endInternal() const { return &internalData.header; }
-  static const_reference value(const_node_ptr x) { return *x->valptr(); }
+  static const_reference value(const_node_ptr x) { return *x->valPtr(); }
   static const Key &key(const_node_ptr x) { return KeyOfValue()(value(x)); }
   static node_ptr left(node_ptr x) { return static_cast<node_ptr>(x->left); }
   static const_node_ptr left(const_node_ptr x) {
@@ -1050,10 +1059,10 @@ protected:
   ///
   template <typename NodeGen>
   iterator insert_(node_ptr x, node_ptr p, const Value &v, NodeGen &node_gen) {
-    bool insert_left = (x != 0 || p == end() ||
+    bool insert_left = (x != 0 || p == endInternal() ||
                         internalData.keyCompare(KeyOfValue()(v), key(p)));
     node_ptr z = node_gen(v);
-    insert_and_rebalance(insert_left, z, p, this->internalData.header);
+    node::insert_and_rebalance(insert_left, z, p, this->internalData.header);
     ++internalData.nodeCount;
     return iterator(z);
   }
@@ -1069,7 +1078,7 @@ protected:
     bool insert_left =
         (p == end() || !internalData.keyCompare(key(p), KeyOfValue()(v)));
     node_ptr z = create_node(v);
-    insert_and_rebalance(insert_left, z, p, this->internalData.header);
+    node::insert_and_rebalance(insert_left, z, p, this->internalData.header);
     ++internalData.nodeCount;
     return iterator(z);
   }
@@ -1101,7 +1110,7 @@ protected:
   ///
   template <typename NodeGen>
   node_ptr copy(const RedBlackTree &x, NodeGen &gen) {
-    node_ptr root = copy(x.begin(), end(), gen);
+    node_ptr root = copy(x.begin().node, end().node, gen);
     leftmost() = minimum(root);
     rightmost() = maximum(root);
     internalData.nodeCount = x.internalData.nodeCount;
@@ -1131,7 +1140,7 @@ protected:
         x = left(x);
       }
     } catch (...) {
-      erase(top);
+      erase(iterator(top));
       __throw_exception_again;
     }
     return top;
@@ -1261,8 +1270,8 @@ protected:
   ///
   pair<node_ptr, node_ptr> get_insert_unique_pos(const key_type &k) {
     typedef pair<node_ptr, node_ptr> Res;
-    node_ptr x = begin();
-    node_ptr y = end();
+    node_ptr x = beginInternal();
+    node_ptr y = endInternal();
     bool comp = true;
     while (x != 0) {
       y = x;
@@ -1304,7 +1313,7 @@ protected:
     iterator pos = position.iterator_const_cast();
     typedef pair<node_ptr, node_ptr> Res;
     // end()
-    if (pos.node == end()) {
+    if (pos.node == endInternal()) {
       if (size() > 0 && internalData.keyCompare(key(rightmost()), k))
         return Res(0, rightmost());
       else
@@ -1339,7 +1348,7 @@ protected:
   }
 
   template <typename NodeGen>
-  iterator insert_unique_(const_iterator position, const Value &v,
+  iterator insert_unique(const_iterator position, const Value &v,
                           NodeGen &node_gen) {
     pair<node_ptr, node_ptr> res =
         get_insert_hint_unique_pos(position, KeyOfValue()(v));
@@ -1402,7 +1411,7 @@ protected:
   /// @param position
   ///
   void erase_aux(const_iterator position) {
-    node_ptr y = static_cast<node_ptr>(rebalance_for_erase(
+    node_ptr y = static_cast<node_ptr>(node::rebalance_for_erase(
         const_cast<node_ptr>(position.node), this->internalData.header));
     drop_node(y);
     --internalData.nodeCount;
