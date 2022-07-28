@@ -742,7 +742,7 @@ private: // Functors
         nodes = 0;
     }
 
-    ~ReuseOrAllocNode() { tree.erase(static_cast<node_ptr>(rootNode)); }
+    ~ReuseOrAllocNode() { tree.erase_internal(static_cast<node_ptr>(rootNode)); }
     template <typename Arg> node_ptr operator()(const Arg &arg) {
       node_ptr node = static_cast<node_ptr>(extract());
       if (node) {
@@ -801,7 +801,7 @@ public:
     if (x.root() != 0)
       root() = copy(x);
   }
-  ~RedBlackTree() { erase(begin()); }
+  ~RedBlackTree() { erase_internal(begin_internal()); }
 
   ///
   /// @brief Assignment operator.
@@ -842,7 +842,7 @@ public:
 
   bool empty() const { return internalData.nodeCount == 0; }
   size_type size() const { return internalData.nodeCount; }
-  size_type maxize() const { return (get_node_allocator_type().maxsize()); }
+  size_type max_size() const { return (get_node_allocator_type().max_size()); }
   void swap(RedBlackTree &t) {
     if (root() == 0) {
       if (t.root() != 0)
@@ -914,8 +914,8 @@ public:
   ///
   /// @param position
   ///
-  void erase(iterator position) { erase_aux(position); }
-  void erase(const_iterator position) { erase_aux(position); }
+  void erase(iterator position) { erase_internal_helper(position); }
+  void erase(const_iterator position) { erase_internal_helper(position); }
 
   ///
   /// @brief Erase all keys of the same value.
@@ -926,7 +926,7 @@ public:
   size_type erase(const Key &x) {
     pair<iterator, iterator> p = equal_range(x);
     const size_type oldsize = size();
-    erase_aux(p.first, p.second);
+    erase_internal_helper(p.first, p.second);
     return oldsize - size();
   }
 
@@ -947,9 +947,9 @@ public:
   /// @param first
   /// @param last
   ///
-  void erase(iterator first, iterator last) { erase_aux(first, last); }
+  void erase(iterator first, iterator last) { erase_internal_helper(first, last); }
   void erase(const_iterator first, const_iterator last) {
-    erase_aux(first, last);
+    erase_internal_helper(first, last);
   }
 
   ///
@@ -957,7 +957,7 @@ public:
   ///
   ///
   void clear() {
-    erase_(begin());
+    erase_internal(begin_internal());
     internalData.reset();
   }
 
@@ -970,11 +970,11 @@ public:
   /// @return iterator
   ///
   iterator find(const Key &k) {
-    iterator j = lower_bound(begin(), end(), k);
+    iterator j = lower_bound_internal(begin_internal(), end_internal(), k);
     return (j == end() || internalData.keyCompare(k, key(j.node))) ? end() : j;
   }
   const_iterator find(const Key &k) const {
-    const_iterator j = lower_bound(begin(), end(), k);
+    const_iterator j = lower_bound_internal(begin_internal(), end_internal(), k);
     return (j == end() || internalData.keyCompare(k, key(j.node))) ? end() : j;
   }
 
@@ -998,10 +998,10 @@ public:
   /// @return iterator
   ///
   iterator lower_bound(const key_type &k) {
-    return lower_bound_(beginInternal(), endInternal(), k);
+    return lower_bound_internal(begin_internal(), end_internal(), k);
   }
   const_iterator lower_bound(const key_type &k) const {
-    return lower_bound_(beginInternal(), endInternal(), k);
+    return lower_bound_internal(begin_internal(), end_internal(), k);
   }
 
   ///
@@ -1011,10 +1011,10 @@ public:
   /// @return iterator
   ///
   iterator upper_bound(const key_type &k) {
-    return upper_bound_(beginInternal(), endInternal(), k);
+    return upper_bound_internal(begin_internal(), end_internal(), k);
   }
   const_iterator upper_bound(const key_type &k) const {
-    return upper_bound_(beginInternal(), endInternal(), k);
+    return upper_bound_internal(begin_internal(), end_internal(), k);
   }
 
 protected:
@@ -1024,14 +1024,14 @@ protected:
   const_node_ptr leftmost() const { return internalData.header.left; }
   node_ptr &rightmost() { return internalData.header.right; }
   const_node_ptr rightmost() const { return internalData.header.right; }
-  node_ptr beginInternal() {
+  node_ptr begin_internal() {
     return static_cast<node_ptr>(internalData.header.parent);
   }
-  const_node_ptr beginInternal() const {
+  const_node_ptr begin_internal() const {
     return static_cast<const_node_ptr>(internalData.header.parent);
   }
-  node_ptr endInternal() { return &internalData.header; }
-  const_node_ptr endInternal() const { return &internalData.header; }
+  node_ptr end_internal() { return &internalData.header; }
+  const_node_ptr end_internal() const { return &internalData.header; }
   static const_reference value(const_node_ptr x) { return *x->valPtr(); }
   static const Key &key(const_node_ptr x) { return KeyOfValue()(value(x)); }
   static node_ptr left(node_ptr x) { return static_cast<node_ptr>(x->left); }
@@ -1059,7 +1059,7 @@ protected:
   ///
   template <typename NodeGen>
   iterator insert_(node_ptr x, node_ptr p, const Value &v, NodeGen &node_gen) {
-    bool insert_left = (x != 0 || p == endInternal() ||
+    bool insert_left = (x != 0 || p == end_internal() ||
                         internalData.keyCompare(KeyOfValue()(v), key(p)));
     node_ptr z = node_gen(v);
     node::insert_and_rebalance(insert_left, z, p, this->internalData.header);
@@ -1140,7 +1140,7 @@ protected:
         x = left(x);
       }
     } catch (...) {
-      erase(iterator(top));
+      erase_internal(top);
       __throw_exception_again;
     }
     return top;
@@ -1151,10 +1151,10 @@ protected:
   ///
   /// @param x
   ///
-  void erase_(node_ptr x) {
+  void erase_internal(node_ptr x) {
     // Erase without rebalancing.
     while (x != 0) {
-      erase(right(x));
+      erase_internal(right(x));
       node_ptr y = left(x);
       drop_node(x);
       x = y;
@@ -1170,7 +1170,7 @@ protected:
   /// @param k
   /// @return iterator
   ///
-  iterator lower_bound_(node_ptr x, node_ptr y, const Key &k) {
+  iterator lower_bound_internal(node_ptr x, node_ptr y, const Key &k) {
     while (x != 0)
       if (!internalData.keyCompare(key(x), k))
         y = x, x = left(x);
@@ -1178,7 +1178,7 @@ protected:
         x = right(x);
     return iterator(y);
   }
-  const_iterator lower_bound_(const_node_ptr x, const_node_ptr y,
+  const_iterator lower_bound_internal(const_node_ptr x, const_node_ptr y,
                               const Key &k) const {
     while (x != 0)
       if (!internalData.keyCompare(key(x), k))
@@ -1197,7 +1197,7 @@ protected:
   /// @param k
   /// @return iterator
   ///
-  iterator upper_bound_(node_ptr x, node_ptr y, const Key &k) {
+  iterator upper_bound_internal(node_ptr x, node_ptr y, const Key &k) {
     while (x != 0)
       if (internalData.keyCompare(k, key(x)))
         y = x, x = left(x);
@@ -1205,7 +1205,7 @@ protected:
         x = right(x);
     return iterator(y);
   }
-  const_iterator upper_bound_(const_node_ptr x, const_node_ptr y,
+  const_iterator upper_bound_internal(const_node_ptr x, const_node_ptr y,
                               const Key &k) const {
     while (x != 0)
       if (internalData.keyCompare(k, key(x)))
@@ -1222,8 +1222,8 @@ protected:
   /// @return pair<iterator, iterator>
   ///
   pair<iterator, iterator> equal_range(const Key &k) {
-    node_ptr x = begin();
-    node_ptr y = end();
+    node_ptr x = begin_internal();
+    node_ptr y = end_internal();
     while (x != 0) {
       if (internalData.keyCompare(key(x), k))
         x = right(x);
@@ -1234,8 +1234,8 @@ protected:
         node_ptr yu(y);
         y = x, x = left(x);
         xu = right(xu);
-        return pair<iterator, iterator>(lower_bound(x, y, k),
-                                        upper_bound(xu, yu, k));
+        return pair<iterator, iterator>(lower_bound_internal(x, y, k),
+                                        upper_bound_internal(xu, yu, k));
       }
     }
     return pair<iterator, iterator>(iterator(y), iterator(y));
@@ -1270,8 +1270,8 @@ protected:
   ///
   pair<node_ptr, node_ptr> get_insert_unique_pos(const key_type &k) {
     typedef pair<node_ptr, node_ptr> Res;
-    node_ptr x = beginInternal();
-    node_ptr y = endInternal();
+    node_ptr x = begin_internal();
+    node_ptr y = end_internal();
     bool comp = true;
     while (x != 0) {
       y = x;
@@ -1313,7 +1313,7 @@ protected:
     iterator pos = position.iterator_const_cast();
     typedef pair<node_ptr, node_ptr> Res;
     // end()
-    if (pos.node == endInternal()) {
+    if (pos.node == end_internal()) {
       if (size() > 0 && internalData.keyCompare(key(rightmost()), k))
         return Res(0, rightmost());
       else
@@ -1410,7 +1410,7 @@ protected:
   ///
   /// @param position
   ///
-  void erase_aux(const_iterator position) {
+  void erase_internal_helper(const_iterator position) {
     node_ptr y = static_cast<node_ptr>(node::rebalance_for_erase(
         const_cast<node_ptr>(position.node), this->internalData.header));
     drop_node(y);
@@ -1423,12 +1423,12 @@ protected:
   /// @param first
   /// @param last
   ///
-  void erase_aux(const_iterator first, const_iterator last) {
+  void erase_internal_helper(const_iterator first, const_iterator last) {
     if (first == begin() && last == end())
       clear();
     else
       while (first != last)
-        erase_aux(first++);
+        erase_internal_helper(first++);
   }
 
   ///

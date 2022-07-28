@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/11 12:07:37 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/25 15:53:28 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/28 11:41:36 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,16 @@ typedef integral_constant<bool, false> false_type;
 
 // Meta programming helper types //
 //---------------------------------------//
-template <bool, class T, class U> struct conditional;
+// Primary template.
+/// Define a member typedef @c type to one of two argument types.
+template <bool Cond, typename IfTrue, typename IfFalse> struct conditional {
+  typedef IfTrue type;
+};
+// Partial specialization for false.
+template <typename IfTrue, typename IfFalse>
+struct conditional<false, IfTrue, IfFalse> {
+  typedef IfFalse type;
+};
 
 template <class T, class U>
 struct _or_ : public conditional<T::value, T, U>::type {};

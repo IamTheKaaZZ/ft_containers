@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:54 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/27 15:21:17 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/28 11:18:08 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,10 @@ public:
       : tree(comp, allocator_type(a)) {
     tree.insert_unique(first, last);
   }
+
+  ~map() {
+  }
+
   /// 
   /// @brief  Map assignment operator.
   ///
