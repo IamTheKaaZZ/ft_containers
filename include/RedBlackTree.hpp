@@ -118,11 +118,11 @@ template <typename Value> struct RedBlackTreeNode {
   /// @param x
   /// @return RedBlackTreeNode*
   ///
-  node_ptr increment(node_ptr x) throw() { return increment_helper(x); }
-  const_node_ptr increment(const_node_ptr x) throw() {
+  node_ptr increment(node_ptr x) const throw() { return increment_helper(x); }
+  const_node_ptr increment(const_node_ptr x) const throw() {
     return increment_helper(const_cast<node_ptr>(x));
   }
-  node_ptr increment() { return (increment(this)); }
+  node_ptr increment() const { return (increment(this)); }
 
   static node_ptr decrement_helper(node_ptr x) throw() {
     if (x->color == Red && x->parent->parent == x)
@@ -149,11 +149,11 @@ template <typename Value> struct RedBlackTreeNode {
   /// @param x
   /// @return RedBlackTreeNode*
   ///
-  node_ptr decrement(node_ptr x) throw() { return decrement_helper(x); }
-  const_node_ptr decrement(const_node_ptr x) throw() {
+  node_ptr decrement(node_ptr x) const throw() { return decrement_helper(x); }
+  const_node_ptr decrement(const_node_ptr x) const  throw() {
     return decrement_helper(const_cast<node_ptr>(x));
   }
-  node_ptr decrement() { return (decrement(this)); }
+  node_ptr decrement() const { return (decrement(this)); }
 
   static void rotate_left_helper(node_ptr const x, node_ptr &root) {
     node_ptr const y = x->right;
@@ -475,7 +475,7 @@ template <typename Value> struct RedBlackTreeHeader {
     nodeCount = 0;
   }
 
-  void moveData(RedBlackTreeHeader &other) {
+  void move_data(RedBlackTreeHeader &other) {
     header.color = other.header.color;
     header.parent = other.header.parent;
     header.left = other.header.left;
@@ -503,21 +503,21 @@ template <typename T> struct RedBlackTree_iterator {
   reference operator*() const { return *node->valPtr(); }
   pointer operator->() const { return node->valPtr(); }
   RBT_it &operator++() {
-    node = node->increment();
+    node = node->increment(node);
     return *this;
   }
   RBT_it operator++(int) {
     RBT_it tmp = *this;
-    node = node->increment();
+    node = node->increment(node);
     return tmp;
   }
   RBT_it &operator--() {
-    node = node->decrement();
+    node = node->decrement(node);
     return *this;
   }
   RBT_it operator--(int) {
     RBT_it tmp = *this;
-    node = node->decrement();
+    node = node->decrement(node);
     return tmp;
   }
   bool operator==(const RBT_it &x) const { return node == x.node; }
@@ -543,24 +543,24 @@ template <typename T> struct RedBlackTree_const_iterator {
   iterator iterator_const_cast() const {
     return iterator(const_cast<typename iterator::node_ptr>(node));
   }
-  reference operator*() const { return *node->valptr(); }
-  pointer operator->() const { return node->valptr(); }
+  reference operator*() const { return *node->valPtr(); }
+  pointer operator->() const { return node->valPtr(); }
   RBT_It &operator++() {
-    node = node->increment();
+    node = node->increment(node);
     return *this;
   }
   RBT_It operator++(int) {
     RBT_It tmp = *this;
-    node = node->increment();
+    node = node->increment(node);
     return tmp;
   }
   RBT_It &operator--() {
-    node = node->decrement();
+    node = node->decrement(node);
     return *this;
   }
   RBT_It operator--(int) {
     RBT_It tmp = *this;
-    node = node->decrement();
+    node = node->decrement(node);
     return tmp;
   }
   bool operator==(const RBT_It &x) const { return node == x.node; }
@@ -853,8 +853,8 @@ public:
       ft::swap(root(), t.root());
       ft::swap(leftmost(), t.leftmost());
       ft::swap(rightmost(), t.rightmost());
-      root()->parent = end();
-      t.root()->parent = t.end();
+      root()->parent = end_internal();
+      t.root()->parent = t.end_internal();
       ft::swap(this->internalData.nodeCount, t.internalData.nodeCount);
     }
     // No need to swap header's color as it does not change.
@@ -1005,6 +1005,54 @@ public:
   }
 
   ///
+  /// @brief Find a subset where all elements have the given Key.
+  ///
+  /// @param k
+  /// @return pair<iterator, iterator>
+  ///
+  pair<iterator, iterator> equal_range(const Key &k) {
+    node_ptr x = begin_internal();
+    node_ptr y = end_internal();
+    while (x != 0) {
+      if (internalData.keyCompare(key(x), k))
+        x = right(x);
+      else if (internalData.keyCompare(k, key(x)))
+        y = x, x = left(x);
+      else {
+        node_ptr xu(x);
+        node_ptr yu(y);
+        y = x, x = left(x);
+        xu = right(xu);
+        return pair<iterator, iterator>(lower_bound_internal(x, y, k),
+                                        upper_bound_internal(xu, yu, k));
+      }
+    }
+    return pair<iterator, iterator>(iterator(y), iterator(y));
+  }
+
+  pair<const_iterator, const_iterator> equal_range(const Key &k) const {
+    const_node_ptr x = begin();
+    const_node_ptr y = end();
+    while (x != 0) {
+      if (internalData.keyCompare(key(x), k))
+        x = right(x);
+      else if (internalData.keyCompare(k, key(x)))
+        y = x, x = left(x);
+      else {
+        const_node_ptr xu(x);
+        const_node_ptr yu(y);
+        y = x, x = left(x);
+        xu = right(xu);
+        return pair<const_iterator, const_iterator>(lower_bound(x, y, k),
+                                                    upper_bound(xu, yu, k));
+      }
+    }
+    return pair<const_iterator, const_iterator>(const_iterator(y),
+                                                const_iterator(y));
+  }
+
+
+  ///
   /// @brief Find the upper_bound of the given key (latest it appears).
   ///
   /// @param k
@@ -1110,7 +1158,7 @@ protected:
   ///
   template <typename NodeGen>
   node_ptr copy(const RedBlackTree &x, NodeGen &gen) {
-    node_ptr root = copy(x.begin().node, end().node, gen);
+    node_ptr root = copy(x.begin_internal(), end_internal(), gen);
     leftmost() = minimum(root);
     rightmost() = maximum(root);
     internalData.nodeCount = x.internalData.nodeCount;
@@ -1213,53 +1261,6 @@ protected:
       else
         x = right(x);
     return const_iterator(y);
-  }
-
-  ///
-  /// @brief Find a subset where all elements have the given Key.
-  ///
-  /// @param k
-  /// @return pair<iterator, iterator>
-  ///
-  pair<iterator, iterator> equal_range(const Key &k) {
-    node_ptr x = begin_internal();
-    node_ptr y = end_internal();
-    while (x != 0) {
-      if (internalData.keyCompare(key(x), k))
-        x = right(x);
-      else if (internalData.keyCompare(k, key(x)))
-        y = x, x = left(x);
-      else {
-        node_ptr xu(x);
-        node_ptr yu(y);
-        y = x, x = left(x);
-        xu = right(xu);
-        return pair<iterator, iterator>(lower_bound_internal(x, y, k),
-                                        upper_bound_internal(xu, yu, k));
-      }
-    }
-    return pair<iterator, iterator>(iterator(y), iterator(y));
-  }
-
-  pair<const_iterator, const_iterator> equal_range(const Key &k) const {
-    const_node_ptr x = begin();
-    const_node_ptr y = end();
-    while (x != 0) {
-      if (internalData.keyCompare(key(x), k))
-        x = right(x);
-      else if (internalData.keyCompare(k, key(x)))
-        y = x, x = left(x);
-      else {
-        const_node_ptr xu(x);
-        const_node_ptr yu(y);
-        y = x, x = left(x);
-        xu = right(xu);
-        return pair<const_iterator, const_iterator>(lower_bound(x, y, k),
-                                                    upper_bound(xu, yu, k));
-      }
-    }
-    return pair<const_iterator, const_iterator>(const_iterator(y),
-                                                const_iterator(y));
   }
 
   ///
