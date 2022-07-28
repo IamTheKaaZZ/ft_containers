@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/25 15:53:02 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/28 16:46:29 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -498,14 +498,6 @@ public:
   }
 
   ///
-  /// @brief Return the data PTR.
-  ///
-  /// @return T*
-  ///
-  T *data() { return dataPtr(Base::start); }
-  const T *data() const { return dataPtr(Base::start); }
-
-  ///
   /// @brief Add the value at the end of the vector.
   ///
   /// @param val
@@ -607,6 +599,15 @@ protected:
   using Base::destroy;
   using Base::destroyAll;
   using Base::swapData;
+
+  ///
+  /// @brief Return the data PTR.
+  ///
+  /// @return T*
+  ///
+  T *data() { return dataPtr(Base::start); }
+  const T *data() const { return dataPtr(Base::start); }
+
 
   ///
   /// @brief Check if a given n will go out of range.
