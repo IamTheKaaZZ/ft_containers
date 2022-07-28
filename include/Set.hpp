@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/28 17:00:26 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/28 17:16:52 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/28 17:31:28 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,8 +119,8 @@ public:
   ///  Returns the comparison object with which the set was constructed.
   value_compare value_comp() const { return tree.key_comp(); }
   ///  Returns the allocator object with which the set was constructed.
-  allocator_type getallocator() const {
-    return allocator_type(tree.getallocator());
+  allocator_type get_allocator() const {
+    return allocator_type(tree.get_allocator());
   }
   ///
   /// Returns a read-only (constant) iterator that points to the first
@@ -180,9 +180,9 @@ public:
   ///
   /// Insertion requires logarithmic time.
   ///
-  std::pair<iterator, bool> insert(const value_type &x) {
-    std::pair<typename tree_type::iterator, bool> p = tree.insert_unique(x);
-    return std::pair<iterator, bool>(p.first, p.second);
+  ft::pair<iterator, bool> insert(const value_type &x) {
+    ft::pair<typename tree_type::iterator, bool> p = tree.insert_unique(x);
+    return ft::pair<iterator, bool>(p.first, p.second);
   }
   ///
   /// @brief Attempts to insert an element into the set.
@@ -332,10 +332,10 @@ public:
   ///
   /// This function probably only makes sense for multisets.
   ///
-  std::pair<iterator, iterator> equal_range(const key_type &x) {
+  ft::pair<iterator, iterator> equal_range(const key_type &x) {
     return tree.equal_range(x);
   }
-  std::pair<const_iterator, const_iterator>
+  ft::pair<const_iterator, const_iterator>
   equal_range(const key_type &x) const {
     return tree.equal_range(x);
   }
