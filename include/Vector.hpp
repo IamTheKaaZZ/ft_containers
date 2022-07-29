@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/28 16:46:29 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/29 16:55:27 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -520,12 +520,13 @@ public:
   }
 
   iterator insert(iterator position, const value_type &val) {
+    difference_type offset = position - begin();
     fillInsert(position, 1, val);
-    return  position--;
+    return  begin() + offset;
   }
 
   ///
-  /// @brief Insert the valua val n times before the given position.
+  /// @brief Insert the value val n times before the given position.
   ///
   /// @param position
   /// @param n
@@ -941,8 +942,8 @@ protected:
         if (elems_after > n) {
             // Copy the last n elems forward.
           Base::finish =
-              construct(Base::finish, iterator(Base::finish - n), iterator(Base::finish));
-          std::copy_backward(&(*position), old_finish - n, old_finish);
+              construct(Base::finish, Base::finish - n, Base::finish);
+          std::copy_backward(position, iterator(old_finish - n), old_finish);
           // Fill in the inserted elems.
           ft::fill(position, position + n, x_copy);
         } else {

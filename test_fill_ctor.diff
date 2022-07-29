@@ -1,0 +1,383 @@
+2,69c2
+< [Object Creation/Destruction] Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 20
+< 19
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 19
+< 18
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 18
+< 17
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 17
+< 16
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 16
+< 15
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 15
+< 14
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 14
+< 13
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 13
+< 12
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 12
+< 11
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 11
+< 10
+< Base D/tor [Base Default C/tor]
+< 10
+< 9
+< Base D/tor [Base Default C/tor]
+< 9
+< 8
+< Base D/tor [Base Default C/tor]
+< 8
+< 7
+< Base D/tor [Base Default C/tor]
+< 7
+< 6
+< Base D/tor [Base Default C/tor]
+< 6
+< 5
+< Base D/tor [Base Default C/tor]
+< 5
+< 4
+< Base D/tor [Base Default C/tor]
+< 4
+< 3
+< Base D/tor [Base Default C/tor]
+< 3
+< 2
+< Base D/tor [Base Default C/tor]
+< 2
+< 1
+< Base D/tor [Base Default C/tor]
+---
+> [Object Creation/Destruction] Base D/tor [Base Default C/tor]
+72,74d4
+< Base D/tor [Base Default C/tor]
+< 11
+< 10
+77,381d6
+< 21
+< 20
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 20
+< 19
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 19
+< 18
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 18
+< 17
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 17
+< 16
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 16
+< 15
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 15
+< 14
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 14
+< 13
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 13
+< 12
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 12
+< 11
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 11
+< 10
+< Base D/tor [Base Copy C/tor]
+< 10
+< 9
+< Base D/tor [Base Copy C/tor]
+< 9
+< 8
+< Base D/tor [Base Copy C/tor]
+< 8
+< 7
+< Base D/tor [Base Copy C/tor]
+< 7
+< 6
+< Base D/tor [Base Copy C/tor]
+< 6
+< 5
+< Base D/tor [Base Copy C/tor]
+< 5
+< 4
+< Base D/tor [Base Copy C/tor]
+< 4
+< 3
+< Base D/tor [Base Copy C/tor]
+< 3
+< 2
+< Base D/tor [Base Copy C/tor]
+< 2
+< 1
+< Base D/tor [Base Copy C/tor]
+< 1
+< 0
+< OK
+< [Capacity] Base D/tor [Base Default C/tor]
+< 11
+< 10
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 21
+< 20
+< 10 10 10
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 20
+< 19
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 19
+< 18
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 18
+< 17
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 17
+< 16
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 16
+< 15
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 15
+< 14
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 14
+< 13
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 13
+< 12
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 12
+< 11
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 11
+< 10
+< Base D/tor [Base Copy C/tor]
+< 10
+< 9
+< Base D/tor [Base Copy C/tor]
+< 9
+< 8
+< Base D/tor [Base Copy C/tor]
+< 8
+< 7
+< Base D/tor [Base Copy C/tor]
+< 7
+< 6
+< Base D/tor [Base Copy C/tor]
+< 6
+< 5
+< Base D/tor [Base Copy C/tor]
+< 5
+< 4
+< Base D/tor [Base Copy C/tor]
+< 4
+< 3
+< Base D/tor [Base Copy C/tor]
+< 3
+< 2
+< Base D/tor [Base Copy C/tor]
+< 2
+< 1
+< Base D/tor [Base Copy C/tor]
+< 1
+< 0
+< [Size] Base D/tor [Base Default C/tor]
+< 11
+< 10
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 21
+< 20
+< 10 10 10
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 20
+< 19
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 19
+< 18
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 18
+< 17
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 17
+< 16
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 16
+< 15
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 15
+< 14
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 14
+< 13
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 13
+< 12
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 12
+< 11
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 11
+< 10
+< Base D/tor [Base Copy C/tor]
+< 10
+< 9
+< Base D/tor [Base Copy C/tor]
+< 9
+< 8
+< Base D/tor [Base Copy C/tor]
+< 8
+< 7
+< Base D/tor [Base Copy C/tor]
+< 7
+< 6
+< Base D/tor [Base Copy C/tor]
+< 6
+< 5
+< Base D/tor [Base Copy C/tor]
+< 5
+< 4
+< Base D/tor [Base Copy C/tor]
+< 4
+< 3
+< Base D/tor [Base Copy C/tor]
+< 3
+< 2
+< Base D/tor [Base Copy C/tor]
+< 2
+< 1
+< Base D/tor [Base Copy C/tor]
+< 1
+< 0
+< [Max Size] Base D/tor [Base Default C/tor]
+< 11
+< 10
+< Derived D/tor [Derived Default C/tor]
+< Base D/tor [Base Default C/tor]
+< 21
+< 20
+< 2305843009213693951 576460752303423487 384307168202282325
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 20
+< 19
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 19
+< 18
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 18
+< 17
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 17
+< 16
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 16
+< 15
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 15
+< 14
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 14
+< 13
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 13
+< 12
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 12
+< 11
+< Derived D/tor [Derived Copy C/tor]
+< Base D/tor [Base Default C/tor]
+< 11
+< 10
+< Base D/tor [Base Copy C/tor]
+< 10
+< 9
+< Base D/tor [Base Copy C/tor]
+< 9
+< 8
+< Base D/tor [Base Copy C/tor]
+< 8
+< 7
+< Base D/tor [Base Copy C/tor]
+< 7
+< 6
+< Base D/tor [Base Copy C/tor]
+< 6
+< 5
+< Base D/tor [Base Copy C/tor]
+< 5
+< 4
+< Base D/tor [Base Copy C/tor]
+< 4
+< 3
+< Base D/tor [Base Copy C/tor]
+< 3
+< 2
+< Base D/tor [Base Copy C/tor]
+< 2
+< 1
+< Base D/tor [Base Copy C/tor]
+383a9
+> [34mSIGSEGV[0m

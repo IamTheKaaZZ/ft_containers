@@ -1,0 +1,14 @@
+18c18
+< [# Test 9 #][capacity] 128
+---
+> [# Test 9 #][capacity] 84
+22c22
+< [# Test 12 #][capacity] 64
+---
+> [# Test 12 #][capacity] 42
+27,28c27,28
+< [values] 83 73 15
+< [values] 21 71 99
+---
+> [values] 4661520 73 0
+> [values] 0 71 99

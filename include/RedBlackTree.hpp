@@ -485,6 +485,8 @@ template <typename Value> struct RedBlackTreeHeader {
   }
 };
 
+template <typename T> struct RedBlackTree_const_iterator;
+
 ///
 /// @brief Custom iterators for the RedBlackTree.
 ///
@@ -524,6 +526,8 @@ template <typename T> struct RedBlackTree_iterator {
   bool operator!=(const RBT_it &x) const { return node != x.node; }
   bool operator==(const node_ptr &x) const { return node == x; }
   bool operator!=(const node_ptr &x) const { return node != x; }
+  bool operator==(const RedBlackTree_const_iterator<T> &x) const { return node == x.node; }
+  bool operator!=(const RedBlackTree_const_iterator<T> &x) const { return node != x.node; }
 
   node_ptr node;
 };
@@ -567,6 +571,8 @@ template <typename T> struct RedBlackTree_const_iterator {
   bool operator!=(const RBT_It &x) const { return node != x.node; }
   bool operator==(const node_ptr &x) const { return node == x; }
   bool operator!=(const node_ptr &x) const { return node != x; }
+  bool operator==(const RedBlackTree_iterator<T> &x) const { return node == x.node; }
+  bool operator!=(const RedBlackTree_iterator<T> &x) const { return node != x.node; }
 
   node_ptr node;
 };

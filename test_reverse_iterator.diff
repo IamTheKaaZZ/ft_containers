@@ -1,0 +1,20 @@
+11c11
+< [ Test 7 ] false
+---
+> [ Test 7 ] true
+13,14c13,14
+< [ Test 9 ] true
+< [ Test 10 ] true
+---
+> [ Test 9 ] false
+> [ Test 10 ] false
+16c16
+< [ Test 12 ] false
+---
+> [ Test 12 ] true
+26,27c26,27
+< [ Test 22 ] false
+< [ Test 23 ] true
+---
+> [ Test 22 ] true
+> [ Test 23 ] false

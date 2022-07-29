@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/28 17:00:26 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/28 17:31:28 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/07/29 10:32:41 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -204,7 +204,7 @@ public:
   /// Insertion requires logarithmic time (if the hint is not taken).
   ///
   iterator insert(const_iterator position, const value_type &x) {
-    return tree.insert_unique_(position, x);
+    return tree.insert_unique(position, x);
   }
   ///
   /// @brief A template function that attempts to insert a range
