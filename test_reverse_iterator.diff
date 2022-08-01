@@ -8,13 +8,29 @@
 ---
 > [ Test 9 ] false
 > [ Test 10 ] false
-16c16
+16,17c16,17
 < [ Test 12 ] false
+< [ Test 13 ] false
 ---
 > [ Test 12 ] true
-26,27c26,27
+> [ Test 13 ] true
+19,20c19,20
+< [ Test 15 ] true
+< [ Test 16 ] true
+---
+> [ Test 15 ] false
+> [ Test 16 ] false
+22c22
+< [ Test 18 ] false
+---
+> [ Test 18 ] true
+26,29c26,29
 < [ Test 22 ] false
 < [ Test 23 ] true
+< [ Test 24 ] false
+< [ Test 25 ] true
 ---
 > [ Test 22 ] true
 > [ Test 23 ] false
+> [ Test 24 ] true
+> [ Test 25 ] false

@@ -30,10 +30,10 @@ namespace test
 
         virtual ~Base()
         {
-            std::cout << "Base D/tor [" << *base_ptr << "]" << std::endl;
-            std::cout << base_leak << '\n';
+            // std::cout << "Base D/tor [" << *base_ptr << "]" << std::endl;
+            // std::cout << base_leak << '\n';
             base_leak--;
-            std::cout << base_leak << '\n';
+            // std::cout << base_leak << '\n';
             delete base_ptr;
         }
 
@@ -46,13 +46,13 @@ namespace test
         std::string *derived_ptr;
         static int derived_leak;
 
-        Derived()
+        Derived() : Base()
         {
             derived_ptr = new std::string("Derived Default C/tor");
             derived_leak++;
         }
 
-        Derived(const Derived &other)
+        Derived(const Derived &other) : Base(other)
         {
             (void)other;
             derived_ptr = new std::string("Derived Copy C/tor");
@@ -61,8 +61,10 @@ namespace test
 
         ~Derived()
         {
-            std::cout << "Derived D/tor [" << *derived_ptr << "]" << std::endl;
+            // std::cout << "Derived D/tor [" << *derived_ptr << "]" << std::endl;
+            // std::cout << derived_leak << '\n';
             derived_leak--;
+            // std::cout << derived_leak << '\n';
             delete derived_ptr;
         }
     };

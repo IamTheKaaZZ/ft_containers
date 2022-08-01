@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/07/20 14:11:26 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/08/01 16:50:41 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -409,10 +409,10 @@ public:
   };
   friend bool operator>(random_access_iterator<T> const &lhs, random_access_iterator<T> const &rhs) { return rhs < lhs; };
   friend bool operator<=(random_access_iterator<T> const &lhs, random_access_iterator<T> const &rhs) {
-    return !(lhs < rhs);
+    return !(lhs > rhs);
   };
   friend bool operator>=(random_access_iterator<T> const &lhs, random_access_iterator<T> const &rhs) {
-    return !(lhs > rhs);
+    return !(lhs < rhs);
   };
   reference operator[](difference_type sz) const { return this->_ptr[sz]; };
 

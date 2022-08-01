@@ -22,7 +22,6 @@ void	test_instances() {
 		ft::vector<test::Derived>	copy_derived_vector(derived_vector);
 	}
 
-    std::cout << std::boolalpha << test::Base::base_leak << '\n' << test::Derived::derived_leak << '\n';
 	if (test::Base::base_leak || test::Derived::derived_leak) {
 		std::cout << "KO" << std::endl;
 	} else {
@@ -103,18 +102,13 @@ void	show_values() {
 
 
 int main() {
-	// std::signal(SIGSEGV, test::sigsegv);
+	std::signal(SIGSEGV, test::sigsegv);
 
 	std::cout << "* Testing copy Constructor *" << std::endl;
 	test_instances();
-    std::cout << "1\n";
 	show_capacity();
-    std::cout << "2\n";
 	show_size();
-    std::cout << "3\n";
 	show_max_size();
-    std::cout << "4\n";
 	show_values();
-    std::cout << "5\n";
 	return 0;
 }
