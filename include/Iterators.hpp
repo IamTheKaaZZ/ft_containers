@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 17:13:16 by bcosters          #+#    #+#             */
-/*   Updated: 2022/08/01 16:50:41 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/08/02 10:19:21 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -699,7 +699,7 @@ public:
   }
   reverse_iterator operator++(int) {
     reverse_iterator<Iterator> tmp(baseIt);
-    ++*this;
+    --baseIt;
     return tmp;
   }
   reverse_iterator &operator--() {
@@ -708,29 +708,23 @@ public:
   }
   reverse_iterator operator--(int) {
     reverse_iterator<Iterator> tmp(baseIt);
-    --*this;
+    ++baseIt;
     return tmp;
   }
   reverse_iterator &operator+=(difference_type sz) {
-    while (sz--)
-      ++*this;
+    baseIt -= sz;
     return *this;
   }
   reverse_iterator operator+(difference_type sz) {
-    reverse_iterator<Iterator> tmp(*this);
-    tmp += sz;
-    return tmp;
+    return reverse_iterator(baseIt - sz);
   }
   reverse_iterator &operator-=(difference_type sz) {
-    while (sz--)
-      --*this;
+    baseIt += sz;
     return *this;
   }
 
   reverse_iterator operator-(difference_type sz) {
-    reverse_iterator<Iterator> tmp(*this);
-    tmp -= sz;
-    return tmp;
+    return reverse_iterator(baseIt + sz);
   }
   friend reverse_iterator operator+(difference_type sz,
                                     reverse_iterator const &src) {
@@ -738,9 +732,7 @@ public:
   }
 
   difference_type operator-(reverse_iterator src) const {
-    difference_type n = 0;
-    while (*this != src--)
-      n++;
+    difference_type n = src.base() - this->base();
     return n;
   }
   // booleans
@@ -751,16 +743,16 @@ public:
     return (a.base() != b.base());
   };
   friend bool operator<(reverse_iterator const &a, reverse_iterator const &b) {
-    return (a.base() < b.base());
+    return (b.base() < a.base());
   };
   friend bool operator>(reverse_iterator const &a, reverse_iterator const &b) {
-    return (a.base() > b.base());
+    return (b.base() > a.base());
   };
   friend bool operator<=(reverse_iterator const &a, reverse_iterator const &b) {
-    return (a.base() <= b.base());
+    return (b.base() <= a.base());
   };
   friend bool operator>=(reverse_iterator const &a, reverse_iterator const &b) {
-    return (a.base() >= b.base());
+    return (b.base() >= a.base());
   };
   // access
   reference operator*() const {

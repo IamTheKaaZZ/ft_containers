@@ -6,7 +6,7 @@
 /*   By: bcosters <bcosters@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/01/13 16:44:00 by bcosters          #+#    #+#             */
-/*   Updated: 2022/08/01 17:46:48 by bcosters         ###   ########.fr       */
+/*   Updated: 2022/08/02 09:32:48 by bcosters         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ namespace ft
     /// @tparam T
     /// @tparam Allocator
     ///
-    template <class T, class Allocator = std::allocator<T>>
+    template <class T, class Allocator = std::allocator<T> >
     class vectorBase
     {
         // Implicit vector data
@@ -303,7 +303,7 @@ namespace ft
         pointer endOfStorage;
     };
 
-    template <class T, class Allocator = std::allocator<T>>
+    template <class T, class Allocator = std::allocator<T> >
     class vector : protected vectorBase<T, Allocator>
     {
 
